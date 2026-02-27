@@ -1211,95 +1211,67 @@ function svAll() { sEn(); sCo(); sSk(); sOV(); sBt(); sPr(); sThtStorage(); sMdS
 /** Save enable state (backwards compatible) */
 function sv() { sEn(); }
 
-/** Dashboard data version - increment to force LOCAL cache reset on update */
-var DATA_VERSION = 3;
-
-/** Load all data from storage */
+/** Load all data from storage.
+ *  Strategy: load from localStorage first (instant), then connect Firebase.
+ *  Firebase is the source of truth — when data arrives, it overwrites local.
+ *  localStorage is NEVER cleared on version update to prevent data loss.
+ */
 function ld() {
-  // Always try to reconnect Firebase first (saved config persists across versions)
+  // Step 1: Always load from localStorage (instant, works offline)
+  var keys = ['en', 'co', 'sk', 'ov', 'bt', 'prod', 'tht', 'md', 'cp', 'xo'];
+  var refs = {en: en, co: co, sk: sk, ov: ov, bt: bt, prod: prod, tht: tht, md: md, cp: cp, xo: xo};
+  keys.forEach(function(key) {
+    var saved = _ll(key);
+    if (saved === null) return;
+    switch(key) {
+      case 'en': en = saved; break;
+      case 'co': co = saved; break;
+      case 'sk': sk = saved; break;
+      case 'ov': ov = saved; break;
+      case 'bt': bt = saved; break;
+      case 'prod': prod = saved; break;
+      case 'tht': tht = saved; break;
+      case 'md': md = saved; break;
+      case 'cp': if (Array.isArray(saved)) cp = saved; break;
+      case 'xo': xo = saved || {}; break;
+    }
+  });
+
+  // Step 2: Connect to Firebase — it will overwrite local data when ready
   var fbConfig = _ll('fbConfig');
-  var hasFb = fbConfig && typeof firebase !== 'undefined';
-
-  // Check version - if outdated, reset LOCAL data but preserve Firebase connection
-  var savedVersion = _ll('version');
-  if (savedVersion !== DATA_VERSION) {
-    // Clear local storage but keep Firebase config
-    en = {}; co = {}; sk = {}; ov = {}; bt = {}; prod = {}; tht = {}; md = {}; cp = []; xo = {};
-    try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem('bd_en');
-        localStorage.removeItem('bd_co');
-        localStorage.removeItem('bd_sk');
-        localStorage.removeItem('bd_ov');
-        localStorage.removeItem('bd_bt');
-        localStorage.removeItem('bd_prod');
-        localStorage.removeItem('bd_tht');
-        localStorage.removeItem('bd_md');
-        localStorage.removeItem('bd_cp');
-        localStorage.removeItem('bd_xo');
-      }
-    } catch(e) {}
-    _ls('version', DATA_VERSION);
-    // If Firebase is available, it will restore data via realtime listeners
-  } else {
-    // Version matches: load from localStorage
-    var savedEn = _ll('en');
-    if (savedEn) en = savedEn;
-    var savedCo = _ll('co');
-    if (savedCo) co = savedCo;
-    var savedSk = _ll('sk');
-    if (savedSk) sk = savedSk;
-    var savedOv = _ll('ov');
-    if (savedOv) ov = savedOv;
-    var savedBt = _ll('bt');
-    if (savedBt) bt = savedBt;
-    var savedProd = _ll('prod');
-    if (savedProd) prod = savedProd;
-    var savedTht = _ll('tht');
-    if (savedTht) tht = savedTht;
-    var savedMd = _ll('md');
-    if (savedMd) md = savedMd;
-    var savedCp = _ll('cp');
-    if (savedCp && Array.isArray(savedCp)) cp = savedCp;
-    var savedXo = _ll('xo');
-    if (savedXo) xo = savedXo;
-  }
-
-  // Connect to Firebase - always use hardcoded config, fall back to saved config
   var useConfig = FB_CONFIG || fbConfig;
   if (useConfig && typeof firebase !== 'undefined') {
+    // Pause realtime listeners until initial fetch is done
     fbSyncPaused = true;
     fbInit(useConfig);
-    // After initial listeners have fired, unpause and re-fetch all data once
-    setTimeout(function() {
-      fbSyncPaused = false;
-      // Explicitly fetch all data to catch anything missed during pause
-      if (fbDb) {
-        fbDb.ref('dashboard').once('value', function(snap) {
-          var data = snap.val();
-          if (!data) return;
-          if (data.en) { en = data.en; _ls('en', en); }
-          if (data.co) { co = data.co; _ls('co', co); }
-          if (data.sk) { sk = data.sk; _ls('sk', sk); }
-          if (data.ov) { ov = data.ov; _ls('ov', ov); }
-          if (data.bt) { bt = data.bt; _ls('bt', bt); }
-          if (data.prod) { prod = data.prod; _ls('prod', prod); }
-          if (data.tht) { tht = data.tht; _ls('tht', tht); }
-          if (data.md) { md = data.md; _ls('md', md); }
-          if (data.cp && Array.isArray(data.cp)) { cp = data.cp; _ls('cp', cp); restoreCustomProducts(); }
-          if (data.xo) { xo = data.xo; _ls('xo', xo); }
-          // Re-render with Firebase data
-          if (typeof document !== 'undefined') {
-            try {
-              initEnable();
-              if (typeof uC === 'function') uC();
-              if (cV === 'p' && typeof calc === 'function') calc();
-              if (cV === 'b' && typeof rB === 'function') rB();
-            } catch(e) {}
-          }
-        });
-      }
-    }, 2000);
+    // Fetch all data from Firebase in one go (waits for connection)
+    if (fbDb) {
+      fbDb.ref('dashboard').once('value', function(snap) {
+        var data = snap.val();
+        fbSyncPaused = false; // Enable realtime listeners after initial load
+        if (!data) return;    // No Firebase data yet — keep local data
+        // Firebase data overwrites local (Firebase is source of truth)
+        if (data.en) { en = data.en; _ls('en', en); }
+        if (data.co) { co = data.co; _ls('co', co); }
+        if (data.sk) { sk = data.sk; _ls('sk', sk); }
+        if (data.ov) { ov = data.ov; _ls('ov', ov); }
+        if (data.bt) { bt = data.bt; _ls('bt', bt); }
+        if (data.prod) { prod = data.prod; _ls('prod', prod); }
+        if (data.tht) { tht = data.tht; _ls('tht', tht); }
+        if (data.md) { md = data.md; _ls('md', md); }
+        if (data.cp && Array.isArray(data.cp)) { cp = data.cp; _ls('cp', cp); restoreCustomProducts(); }
+        if (data.xo) { xo = data.xo; _ls('xo', xo); }
+        // Re-render with Firebase data
+        if (typeof document !== 'undefined') {
+          try {
+            initEnable();
+            if (typeof uC === 'function') uC();
+            if (cV === 'p' && typeof calc === 'function') calc();
+            if (cV === 'b' && typeof rB === 'function') rB();
+          } catch(e) {}
+        }
+      });
+    }
   }
 }
 
