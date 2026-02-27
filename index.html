@@ -1270,7 +1270,36 @@ function ld() {
   if (useConfig && typeof firebase !== 'undefined') {
     fbSyncPaused = true;
     fbInit(useConfig);
-    setTimeout(function() { fbSyncPaused = false; }, 2000);
+    // After initial listeners have fired, unpause and re-fetch all data once
+    setTimeout(function() {
+      fbSyncPaused = false;
+      // Explicitly fetch all data to catch anything missed during pause
+      if (fbDb) {
+        fbDb.ref('dashboard').once('value', function(snap) {
+          var data = snap.val();
+          if (!data) return;
+          if (data.en) { en = data.en; _ls('en', en); }
+          if (data.co) { co = data.co; _ls('co', co); }
+          if (data.sk) { sk = data.sk; _ls('sk', sk); }
+          if (data.ov) { ov = data.ov; _ls('ov', ov); }
+          if (data.bt) { bt = data.bt; _ls('bt', bt); }
+          if (data.prod) { prod = data.prod; _ls('prod', prod); }
+          if (data.tht) { tht = data.tht; _ls('tht', tht); }
+          if (data.md) { md = data.md; _ls('md', md); }
+          if (data.cp && Array.isArray(data.cp)) { cp = data.cp; _ls('cp', cp); restoreCustomProducts(); }
+          if (data.xo) { xo = data.xo; _ls('xo', xo); }
+          // Re-render with Firebase data
+          if (typeof document !== 'undefined') {
+            try {
+              initEnable();
+              if (typeof uC === 'function') uC();
+              if (cV === 'p' && typeof calc === 'function') calc();
+              if (cV === 'b' && typeof rB === 'function') rB();
+            } catch(e) {}
+          }
+        });
+      }
+    }, 2000);
   }
 }
 
