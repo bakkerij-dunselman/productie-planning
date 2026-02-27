@@ -983,6 +983,17 @@ var fbDb = null;        // Firebase database reference
 var fbConnected = false;
 var fbSyncPaused = false; // Pause listeners during bulk load
 
+// Hardcoded Firebase config — automatisch verbinden
+var FB_CONFIG = {
+  apiKey: "AIzaSyDtHtzwa7F0o2e8xcUF-5HePeO5L26V288",
+  authDomain: "productie-planning-dashboard.firebaseapp.com",
+  databaseURL: "https://productie-planning-dashboard-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "productie-planning-dashboard",
+  storageBucket: "productie-planning-dashboard.firebasestorage.app",
+  messagingSenderId: "450745526612",
+  appId: "1:450745526612:web:6e74e544be07c962c3c0c1"
+};
+
 /** Initialize Firebase with config */
 function fbInit(config) {
   try {
@@ -1233,10 +1244,11 @@ function ld() {
     if (savedXo) xo = savedXo;
   }
 
-  // Connect to Firebase - realtime listeners will sync/restore data
-  if (hasFb) {
+  // Connect to Firebase - always use hardcoded config, fall back to saved config
+  var useConfig = FB_CONFIG || fbConfig;
+  if (useConfig && typeof firebase !== 'undefined') {
     fbSyncPaused = true;
-    fbInit(fbConfig);
+    fbInit(useConfig);
     setTimeout(function() { fbSyncPaused = false; }, 2000);
   }
 }
