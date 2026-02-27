@@ -205,6 +205,28 @@ tbody tr:hover td:not(.wk-ok):not(.wk-lo):not(.wk-ou):not(.wk-ng){background:#FD
 .add-prod-num{width:80px;text-align:right}
 .pc-custom{border-left:3px solid var(--brand) !important}
 
+/* === UNDO BAR === */
+.undo-bar{position:fixed;bottom:-60px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.3);display:flex;align-items:center;gap:12px;z-index:1000;transition:bottom .3s ease;font-size:13px;white-space:nowrap}
+.undo-bar.undo-show{bottom:20px}
+.undo-bar .undo-msg{opacity:.85}
+.undo-bar .undo-btn{background:var(--accent);color:#5a3e00;border:none;padding:6px 14px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;transition:background .15s}
+.undo-bar .undo-btn:hover{background:#ffd060}
+.undo-bar .undo-close{background:none;border:none;color:#999;cursor:pointer;font-size:16px;padding:2px 6px;line-height:1}
+.undo-bar .undo-close:hover{color:#fff}
+
+/* === PASSWORD GATE === */
+.pw-gate{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,var(--brand-dark),var(--brand-light));display:flex;align-items:center;justify-content:center;transition:opacity .4s}
+.pw-gate.pw-hide{opacity:0;pointer-events:none}
+.pw-box{background:#fff;border-radius:16px;padding:40px 36px;box-shadow:0 8px 40px rgba(0,0,0,.25);text-align:center;max-width:360px;width:90%}
+.pw-box h2{color:var(--brand-dark);font-size:22px;margin-bottom:4px}
+.pw-box .pw-sub{color:var(--gray);font-size:12px;margin-bottom:24px}
+.pw-box input{width:100%;padding:12px 16px;border:2px solid #ddd;border-radius:10px;font-size:15px;text-align:center;transition:border-color .2s;outline:none;letter-spacing:2px}
+.pw-box input:focus{border-color:var(--brand)}
+.pw-box .pw-btn{width:100%;padding:12px;margin-top:12px;background:var(--brand);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s}
+.pw-box .pw-btn:hover{background:var(--brand-light)}
+.pw-box .pw-err{color:var(--red);font-size:12px;margin-top:8px;min-height:18px}
+.pw-box .pw-logo{font-size:36px;margin-bottom:8px}
+
 /* Views */
 #planView,#beheerView{display:none}#planView.active,#beheerView.active{display:block}
 
@@ -338,7 +360,19 @@ tbody tr:hover td:not(.wk-ok):not(.wk-lo):not(.wk-ou):not(.wk-ng){background:#FD
 }
 </style>
 </head>
-<body onload="init()">
+<body onload="checkAuth()">
+  <!-- Password Gate -->
+  <div class="pw-gate" id="pwGate">
+    <div class="pw-box">
+      <div class="pw-logo">&#127838;</div>
+      <h2>Bakkerij Dunselman</h2>
+      <div class="pw-sub">Productie Planning Dashboard</div>
+      <input type="password" id="pwInput" placeholder="Wachtwoord..." onkeydown="if(event.key==='Enter')checkPw()">
+      <button class="pw-btn" onclick="checkPw()">Inloggen</button>
+      <div class="pw-err" id="pwErr"></div>
+    </div>
+  </div>
+
   <div class="header">
     <div>
       <h1>Bakkerij Dunselman</h1>
@@ -488,27 +522,27 @@ tbody tr:hover td:not(.wk-ok):not(.wk-lo):not(.wk-ou):not(.wk-ng){background:#FD
           <button class="bh-sort-btn sort-btn" data-sort="demand" onclick="setBhSort('demand')">Verkoop</button>
           <button class="bh-sort-btn sort-btn" data-sort="code" onclick="setBhSort('code')">Code</button>
         </div>
-        <button class="btn bg bs" onclick="bhToggleAll(true)">Alles aan</button>
-        <button class="btn bd bs" onclick="bhToggleAll(false)">Alles uit</button>
+        <button class="btn bg bs" onclick="safeAction('Alles aan','Weet je zeker dat je ALLE producten wilt aanzetten?',function(){bhToggleAll(true)})">Alles aan</button>
+        <button class="btn bd bs" onclick="safeAction('Alles uit','Weet je zeker dat je ALLE producten wilt uitzetten?',function(){bhToggleAll(false)})">Alles uit</button>
         <label class="focus-label" style="margin-left:4px" title="Toon uitgezette producten">
           <input type="checkbox" id="bhShowOff" onchange="bhShowDisabled=this.checked;rB()">
           <span>Toon uitgezet</span>
         </label>
       </div>
       <div class="ba">
-        <button class="btn bs bo" onclick="aT('Brood')">Brood drempel</button>
-        <button class="btn bs bo" onclick="aT('Banket Warm')">BW drempel</button>
-        <button class="btn bs bo" onclick="aT('Banket Koud')">BK drempel</button>
-        <button class="btn bs bo" onclick="aT('Chocolaterie')">Choco drempel</button>
-        <button class="btn bs bo" onclick="aT('Overig')">Overig drempel</button>
+        <button class="btn bs bo" onclick="safeAction('Drempel Brood','Producten onder de drempel in Brood worden uitgezet. Doorgaan?',function(){aT('Brood')})">Brood drempel</button>
+        <button class="btn bs bo" onclick="safeAction('Drempel BW','Producten onder de drempel in Banket Warm worden uitgezet. Doorgaan?',function(){aT('Banket Warm')})">BW drempel</button>
+        <button class="btn bs bo" onclick="safeAction('Drempel BK','Producten onder de drempel in Banket Koud worden uitgezet. Doorgaan?',function(){aT('Banket Koud')})">BK drempel</button>
+        <button class="btn bs bo" onclick="safeAction('Drempel Choco','Producten onder de drempel in Chocolaterie worden uitgezet. Doorgaan?',function(){aT('Chocolaterie')})">Choco drempel</button>
+        <button class="btn bs bo" onclick="safeAction('Drempel Overig','Producten onder de drempel in Overig worden uitgezet. Doorgaan?',function(){aT('Overig')})">Overig drempel</button>
         <span class="sep"></span>
-        <button class="btn bs bo" onclick="tN('Brood',10)">Top 10 Brood</button>
-        <button class="btn bs bo" onclick="tN('Banket Warm',10)">Top 10 BW</button>
-        <button class="btn bs bo" onclick="tN('Banket Koud',10)">Top 10 BK</button>
-        <button class="btn bs bo" onclick="tN('Chocolaterie',10)">Top 10 Choco</button>
-        <button class="btn bs bo" onclick="tN('Overig',10)">Top 10 Overig</button>
+        <button class="btn bs bo" onclick="safeAction('Top 10 Brood','Alleen de top 10 best verkochte producten in Brood worden aangezet. Doorgaan?',function(){tN('Brood',10)})">Top 10 Brood</button>
+        <button class="btn bs bo" onclick="safeAction('Top 10 BW','Alleen de top 10 in Banket Warm worden aangezet. Doorgaan?',function(){tN('Banket Warm',10)})">Top 10 BW</button>
+        <button class="btn bs bo" onclick="safeAction('Top 10 BK','Alleen de top 10 in Banket Koud worden aangezet. Doorgaan?',function(){tN('Banket Koud',10)})">Top 10 BK</button>
+        <button class="btn bs bo" onclick="safeAction('Top 10 Choco','Alleen de top 10 in Chocolaterie worden aangezet. Doorgaan?',function(){tN('Chocolaterie',10)})">Top 10 Choco</button>
+        <button class="btn bs bo" onclick="safeAction('Top 10 Overig','Alleen de top 10 in Overig worden aangezet. Doorgaan?',function(){tN('Overig',10)})">Top 10 Overig</button>
         <span class="sep"></span>
-        <button class="btn bs bp" onclick="rstDef();initEnable();uC();rB()">Reset</button>
+        <button class="btn bs bd" onclick="safeAction('Reset alles','LET OP: Dit wist ALLE instellingen (voorraad, productie, OV). Weet je dit zeker?',function(){rstDef();initEnable();uC();rB()})">Reset</button>
       </div>
       <div class="add-prod-bar">
         <button class="btn bs bp" id="addProdToggle" onclick="document.getElementById('addProdForm').style.display=document.getElementById('addProdForm').style.display==='none'?'flex':'none';this.textContent=document.getElementById('addProdForm').style.display==='none'?'+ Product toevoegen':'Annuleer'">+ Product toevoegen</button>
@@ -584,6 +618,77 @@ var bhShowDisabled = false; // Show disabled products in beheer
 var planSort = 'urgency'; // Planning sort mode: 'urgency', 'alpha', 'demand', 'stock'
 var planOrderCache = null; // Cached product order (array of codes) to prevent re-sorting during editing
 var planSortFrozen = false; // True when sort should be frozen (during prod/order edits)
+
+// ============================================================
+// UNDO / SNAPSHOT SYSTEM
+// ============================================================
+var _undoStack = []; // Stack of {label, snapshot} for undo
+var MAX_UNDO = 10;
+
+/** Take a snapshot of current state (for undo) */
+function _takeSnapshot(label) {
+  _undoStack.push({
+    label: label,
+    ts: Date.now(),
+    en: JSON.parse(JSON.stringify(en)),
+    co: JSON.parse(JSON.stringify(co)),
+    sk: JSON.parse(JSON.stringify(sk)),
+    ov: JSON.parse(JSON.stringify(ov)),
+    bt: JSON.parse(JSON.stringify(bt)),
+    prod: JSON.parse(JSON.stringify(prod)),
+    tht: JSON.parse(JSON.stringify(tht)),
+    md: JSON.parse(JSON.stringify(md)),
+    xo: JSON.parse(JSON.stringify(xo))
+  });
+  if (_undoStack.length > MAX_UNDO) _undoStack.shift();
+  _showUndoBar(label);
+}
+
+/** Restore last snapshot (undo) */
+function undoLast() {
+  if (_undoStack.length === 0) return;
+  var snap = _undoStack.pop();
+  en = snap.en; co = snap.co; sk = snap.sk; ov = snap.ov;
+  bt = snap.bt; prod = snap.prod; tht = snap.tht; md = snap.md; xo = snap.xo;
+  // Save restored state
+  svAll();
+  // Re-render
+  if (typeof document !== 'undefined') {
+    if (typeof uC === 'function') uC();
+    if (cV === 'p' && typeof calc === 'function') calc();
+    if (cV === 'b' && typeof rB === 'function') rB();
+  }
+  _hideUndoBar();
+}
+
+/** Show undo bar at bottom of screen */
+function _showUndoBar(label) {
+  if (typeof document === 'undefined') return;
+  var bar = document.getElementById('undoBar');
+  if (!bar) return;
+  var msg = document.getElementById('undoMsg');
+  if (msg) msg.textContent = label;
+  bar.classList.add('undo-show');
+  // Auto-hide after 8 seconds
+  if (bar._timer) clearTimeout(bar._timer);
+  bar._timer = setTimeout(function() { _hideUndoBar(); }, 8000);
+}
+
+/** Hide undo bar */
+function _hideUndoBar() {
+  if (typeof document === 'undefined') return;
+  var bar = document.getElementById('undoBar');
+  if (bar) bar.classList.remove('undo-show');
+}
+
+/** Confirm dangerous action, then execute with undo support */
+function safeAction(label, message, action) {
+  if (typeof document === 'undefined') { action(); return; }
+  if (confirm(message)) {
+    _takeSnapshot(label);
+    action();
+  }
+}
 
 // ============================================================
 // HELPER FUNCTIONS
@@ -2072,6 +2177,50 @@ togAdvanced = function() {
   var el = document.getElementById('advCfg');
   if (el) el.classList.toggle('show');
 };
+
+// ============================================================
+// PASSWORD GATE
+// ============================================================
+// SHA-256 hash of the password (so plaintext is not in source)
+var PW_HASH = 'c6d6362de2d30dcc48ca9fd6a46907e60b0f800acb23590ec97817957d446433';
+
+async function hashPw(pw) {
+  var enc = new TextEncoder().encode(pw);
+  var buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+async function checkPw() {
+  var inp = document.getElementById('pwInput');
+  var err = document.getElementById('pwErr');
+  if (!inp.value) { err.textContent = 'Vul een wachtwoord in'; return; }
+  var h = await hashPw(inp.value);
+  if (h === PW_HASH) {
+    sessionStorage.setItem('bd_auth', '1');
+    document.getElementById('pwGate').classList.add('pw-hide');
+    setTimeout(function() { document.getElementById('pwGate').style.display = 'none'; }, 400);
+    init();
+  } else {
+    err.textContent = 'Onjuist wachtwoord';
+    inp.value = '';
+    inp.focus();
+  }
+}
+
+function checkAuth() {
+  if (sessionStorage.getItem('bd_auth') === '1') {
+    document.getElementById('pwGate').style.display = 'none';
+    init();
+  } else {
+    document.getElementById('pwInput').focus();
+  }
+}
   </script>
+  <!-- Undo bar -->
+  <div class="undo-bar" id="undoBar">
+    <span class="undo-msg"><span id="undoMsg"></span> uitgevoerd</span>
+    <button class="undo-btn" onclick="undoLast()">&#8630; Ongedaan maken</button>
+    <button class="undo-close" onclick="_hideUndoBar()" title="Sluiten">&times;</button>
+  </div>
 </body>
 </html>
