@@ -37,6 +37,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 /* === TOOLBAR === */
 .toolbar{background:#fff;border-radius:10px;padding:8px 14px;margin-bottom:6px;box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tb-toggle{display:none;width:100%;padding:6px 0 2px;cursor:pointer;font-size:12px;font-weight:600;color:var(--brand);text-align:center;user-select:none;border:none;background:none}
+.tb-toggle .tb-arrow{display:inline-block;transition:transform .2s;font-size:10px;margin-left:4px}
+.tb-toggle.open .tb-arrow{transform:rotate(180deg)}
+.toolbar .tb-body{display:contents}
+.toolbar .tb-summary{display:none}
 .toolbar .tg{display:flex;flex-direction:column;gap:2px}
 .toolbar .tg label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--gray)}
 .toolbar .tg select,.toolbar .tg input{padding:4px 7px;border:1px solid #ddd;border-radius:6px;font-size:12px;background:#fff;transition:all .2s}
@@ -107,8 +112,8 @@ td{padding:8px 10px;border-bottom:1px solid #f0ece8}
 td.col-prod{max-width:260px}
 .prod-name{font-weight:600;font-size:13px;color:#333;display:block;line-height:1.3;white-space:normal}
 .prod-code{font-size:10px;color:#aaa;margin-top:1px;display:block}
-.plan-off{display:inline-block;font-size:9px;color:#ccc;cursor:pointer;margin-left:4px;padding:1px 3px;border-radius:3px;vertical-align:middle;transition:all .15s}
-.plan-off:hover{color:var(--red);background:#fee;}
+.plan-off{display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#c0a0a0;cursor:pointer;margin-left:6px;padding:2px 6px;border-radius:4px;vertical-align:middle;transition:all .15s;background:#f8f0f0;border:1px solid #e8d8d8;min-width:24px;min-height:24px}
+.plan-off:hover{color:#fff;background:var(--red);border-color:var(--red)}
 td.vk{font-size:13px;font-weight:500;color:var(--gray)}
 td.vr{font-size:14px;font-weight:700}
 tbody tr:nth-child(odd) td:not(.wk-ok):not(.wk-lo):not(.wk-ou):not(.wk-ng){background:#fdfcfb}
@@ -224,8 +229,13 @@ tbody tr:hover td:not(.wk-ok):not(.wk-lo):not(.wk-ou):not(.wk-ng){background:#FD
   /* Main content: less padding */
   .dash{padding:6px 8px}
 
-  /* Toolbar: stack vertically */
-  .toolbar{padding:8px 10px;gap:8px}
+  /* Toolbar: collapsible on mobile */
+  .toolbar{padding:6px 10px;gap:6px}
+  .tb-toggle{display:block}
+  .toolbar .tb-body{display:none;flex-wrap:wrap;gap:8px;width:100%;align-items:center;padding-top:4px;border-top:1px solid #f0ece8;margin-top:2px}
+  .toolbar .tb-body.tb-open{display:flex}
+  .toolbar .tb-summary{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray);width:100%;justify-content:center}
+  .toolbar .tb-summary .tb-s-val{font-weight:700;color:var(--brand)}
   .toolbar .tg{flex-direction:row;align-items:center;gap:6px}
   .toolbar .tg label{font-size:8px;min-width:55px}
   .toolbar .tg input,.toolbar .tg select{padding:6px 8px;font-size:13px}
@@ -243,6 +253,12 @@ tbody tr:hover td:not(.wk-ok):not(.wk-lo):not(.wk-ou):not(.wk-ng){background:#FD
   /* Geavanceerd + CSV */
   .cfg-toggle{padding:6px 12px;font-size:12px}
   .btn.bs{padding:6px 12px;font-size:12px}
+
+  /* Sticky product name column */
+  th.col-prod,td.col-prod{position:sticky;left:0;z-index:10;background:#fff}
+  thead th.col-prod{z-index:51;background:#f7f3f0}
+  tbody tr:nth-child(odd) td.col-prod{background:#fdfcfb}
+  tbody tr:hover td.col-prod{background:#FDF6EE}
 
   /* Advanced settings */
   .cfg-adv.show{flex-direction:column;gap:8px}
@@ -273,6 +289,7 @@ tbody tr:hover td:not(.wk-ok):not(.wk-lo):not(.wk-ou):not(.wk-ng){background:#FD
   td.col-prod{max-width:160px}
   .prod-name{font-size:12px}
   .prod-code{font-size:9px}
+  .plan-off{font-size:13px;padding:4px 8px;min-width:32px;min-height:32px}
 
   /* Week cells: compact but readable */
   .wc{min-width:68px;padding:5px 3px !important;font-size:12px}
@@ -326,7 +343,7 @@ tbody tr:hover td:not(.wk-ok):not(.wk-lo):not(.wk-ou):not(.wk-ng){background:#FD
     <div>
       <h1>Bakkerij Dunselman</h1>
       <div class="sub">Productie Planning &mdash; <span id="dt"></span></div>
-      <div class="tagline">Bakkers sinds 1860</div>
+      <div class="tagline">Bakkers sinds 1860 &mdash; v2.4</div>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
       <div id="syncStatus" class="sync-badge" onclick="fbSetup()" title="Klik om sync in te stellen"><span style="color:#999">&#9679;</span> Lokaal</div>
@@ -345,35 +362,39 @@ tbody tr:hover td:not(.wk-ok):not(.wk-lo):not(.wk-ou):not(.wk-ng){background:#FD
   <div class="dash">
     <!-- Toolbar: date, weeks, presets, months -->
     <div class="toolbar">
-      <div class="tg">
-        <label>Startdatum</label>
-        <input type="date" id="pd" onchange="calc()">
-      </div>
-      <div class="tg">
-        <label>Weken</label>
-        <input type="number" id="wks" value="6" min="1" max="52" style="width:56px" onchange="calc()">
-      </div>
-      <div class="sep"></div>
-      <div class="tg">
-        <label>Periode</label>
-        <div class="period-btns">
-          <button class="pbtn active" data-preset="all" onclick="setPeriod('all')">Alles</button>
-          <button class="pbtn" data-preset="h1" onclick="setPeriod('h1')">H1</button>
-          <button class="pbtn" data-preset="h2" onclick="setPeriod('h2')">H2</button>
-          <button class="pbtn" data-preset="q1" onclick="setPeriod('q1')">Q1</button>
-          <button class="pbtn" data-preset="q2" onclick="setPeriod('q2')">Q2</button>
-          <button class="pbtn" data-preset="q3" onclick="setPeriod('q3')">Q3</button>
-          <button class="pbtn" data-preset="q4" onclick="setPeriod('q4')">Q4</button>
+      <div class="tb-summary" id="tbSummary"></div>
+      <button class="tb-toggle" id="tbToggle" onclick="togToolbar()">Instellingen <span class="tb-arrow">&#9660;</span></button>
+      <div class="tb-body" id="tbBody">
+        <div class="tg">
+          <label>Startdatum</label>
+          <input type="date" id="pd" onchange="calc()">
         </div>
-      </div>
-      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
-        <div class="cfg-toggle" onclick="unlockAdvanced()">&#9881; Geavanceerd</div>
-        <button class="btn bs bp" onclick="expCSV()" title="Exporteer naar CSV">&#128190; CSV</button>
-      </div>
-      <!-- Months row (second line inside toolbar) -->
-      <div class="months-line">
-        <span class="ml">Maanden</span>
-        <div class="months-row" id="monthChecks"></div>
+        <div class="tg">
+          <label>Weken</label>
+          <input type="number" id="wks" value="6" min="1" max="52" style="width:56px" onchange="calc()">
+        </div>
+        <div class="sep"></div>
+        <div class="tg">
+          <label>Periode</label>
+          <div class="period-btns">
+            <button class="pbtn active" data-preset="all" onclick="setPeriod('all')">Alles</button>
+            <button class="pbtn" data-preset="h1" onclick="setPeriod('h1')">H1</button>
+            <button class="pbtn" data-preset="h2" onclick="setPeriod('h2')">H2</button>
+            <button class="pbtn" data-preset="q1" onclick="setPeriod('q1')">Q1</button>
+            <button class="pbtn" data-preset="q2" onclick="setPeriod('q2')">Q2</button>
+            <button class="pbtn" data-preset="q3" onclick="setPeriod('q3')">Q3</button>
+            <button class="pbtn" data-preset="q4" onclick="setPeriod('q4')">Q4</button>
+          </div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+          <div class="cfg-toggle" onclick="unlockAdvanced()">&#9881; Geavanceerd</div>
+          <button class="btn bs bp" onclick="expCSV()" title="Exporteer naar CSV">&#128190; CSV</button>
+        </div>
+        <!-- Months row (second line inside toolbar) -->
+        <div class="months-line">
+          <span class="ml">Maanden</span>
+          <div class="months-row" id="monthChecks"></div>
+        </div>
       </div>
     </div>
 
@@ -1487,6 +1508,35 @@ function unlockAdvanced() {
   }
 }
 
+/** Toggle toolbar on mobile */
+function togToolbar() {
+  if (typeof document === 'undefined') return;
+  var body = document.getElementById('tbBody');
+  var btn = document.getElementById('tbToggle');
+  if (body && btn) {
+    body.classList.toggle('tb-open');
+    btn.classList.toggle('open');
+  }
+}
+
+/** Update toolbar summary (shown on mobile when collapsed) */
+function updateTbSummary() {
+  if (typeof document === 'undefined') return;
+  var el = document.getElementById('tbSummary');
+  if (!el) return;
+  var pd = document.getElementById('pd');
+  var wks = document.getElementById('wks');
+  var dateStr = pd ? pd.value : '';
+  var wkVal = wks ? wks.value : '6';
+  if (dateStr) {
+    var d = new Date(dateStr + 'T00:00:00');
+    var day = d.getDate();
+    var mon = d.toLocaleDateString('nl-NL', {month:'short'});
+    dateStr = day + ' ' + mon;
+  }
+  el.innerHTML = '<span class="tb-s-val">' + dateStr + '</span> &middot; <span class="tb-s-val">' + wkVal + '</span> weken &middot; ' + getPeriodLabel();
+}
+
 /** Clear search */
 function clrSrch() {
   if (typeof document === 'undefined') return;
@@ -1815,6 +1865,7 @@ function calc() {
   if (document.getElementById('cDept')) document.getElementById('cDept').textContent = deptCount;
   if (document.getElementById('cProd')) document.getElementById('cProd').textContent = deptCount;
   updatePeriodLabel();
+  updateTbSummary();
 }
 
 // ============================================================
