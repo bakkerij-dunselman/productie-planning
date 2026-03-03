@@ -74,6 +74,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .search-bar input{border:1px solid var(--border);background:var(--surface-sub);border-radius:var(--radius);padding:8px 10px;font-size:16px;font-family:var(--font);color:var(--text);outline:none;flex:1;min-height:40px}
 .search-bar input:focus{border-color:var(--brand);box-shadow:var(--shadow-focus);background:var(--surface)}
 .search-bar .topbar-sync{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-sub);padding:6px 8px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;white-space:nowrap;min-height:36px;flex-shrink:0}
+.last-mod{font-size:10px;color:var(--text-dim);text-align:right;padding:2px 12px 0;line-height:1}
 .topbar-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
 .topbar-sync{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-sub);padding:6px 8px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer;transition:all .12s;white-space:nowrap;min-height:36px}
 .topbar-sync:hover{background:var(--surface-hover)}
@@ -615,7 +616,7 @@ td.vr{font-size:14px;font-weight:700}
         </div>
         <div class="sb-item" data-cat="Overig" onclick="sbNav('Overig')">
           <span class="cat-dot" style="background:var(--overig)"></span>
-          Overig
+          Inkoop
           <span class="sb-badge" id="sb_cnt_Overig">0</span>
         </div>
         <div class="sb-section-label">Instellingen</div>
@@ -656,7 +657,7 @@ td.vr{font-size:14px;font-weight:700}
         <div class="tab t-bw" onclick="sw('Banket Warm')">B.Warm<span class="c" id="cnt_Banket_Warm">0</span></div>
         <div class="tab t-bk" onclick="sw('Banket Koud')">B.Koud<span class="c" id="cnt_Banket_Koud">0</span></div>
         <div class="tab t-ch" onclick="sw('Chocolaterie')">Choco<span class="c" id="cnt_Chocolaterie">0</span></div>
-        <div class="tab t-ov" onclick="sw('Overig')">Overig<span class="c" id="cnt_Overig">0</span></div>
+        <div class="tab t-ov" onclick="sw('Overig')">Inkoop<span class="c" id="cnt_Overig">0</span></div>
         <div class="tab t-bh" onclick="swB()">Beheer</div>
       </div>
 
@@ -684,7 +685,7 @@ td.vr{font-size:14px;font-weight:700}
         </div>
         <div class="btab" data-cat="Overig" onclick="sw('Overig')">
           <span class="btab-icon">&#128230;</span>
-          <span class="btab-label">Overig</span>
+          <span class="btab-label">Inkoop</span>
           <span class="btab-badge" id="bcnt_Overig">0</span>
         </div>
         <div class="btab" data-cat="beheer" onclick="swB()">
@@ -752,6 +753,7 @@ td.vr{font-size:14px;font-weight:700}
           <span id="syncLabel2">Lokaal</span>
         </div>
       </div>
+      <div class="last-mod" id="lastMod"></div>
 
       <div class="dash">
         <!-- Toolbar -->
@@ -1544,6 +1546,14 @@ function fbListen() {
         } catch(e) {}
       }
     });
+  });
+  // Listen for lastModified from other devices
+  fbDb.ref('dashboard/lastModified').on('value', function(snap) {
+    var val = snap.val();
+    if (val) {
+      try { localStorage.setItem('lastModified', val); } catch(e) {}
+      if (typeof renderLastModified === 'function') renderLastModified(new Date(val));
+    }
   });
 }
 
@@ -2453,6 +2463,7 @@ function init() {
     fbUpdateStatus();
     uC();
     calc();
+    if (typeof renderLastModified === 'function') renderLastModified();
   }
 }
 
@@ -2755,6 +2766,31 @@ function showToast(msg) {
   bar.classList.add('toast-show');
   if (_toastTimer) clearTimeout(_toastTimer);
   _toastTimer = setTimeout(function() { bar.classList.remove('toast-show'); }, 2500);
+  // Update last-modified timestamp
+  updateLastModified();
+}
+
+function updateLastModified() {
+  var now = new Date();
+  var ts = now.toISOString();
+  try { localStorage.setItem('lastModified', ts); } catch(e) {}
+  if (typeof fbWrite === 'function') fbWrite('lastModified', ts);
+  renderLastModified(now);
+}
+
+function renderLastModified(d) {
+  var el = document.getElementById('lastMod');
+  if (!el) return;
+  if (!d) {
+    var ts = null;
+    try { ts = localStorage.getItem('lastModified'); } catch(e) {}
+    if (!ts) { el.textContent = ''; return; }
+    d = new Date(ts);
+  }
+  var pad = function(n) { return n < 10 ? '0' + n : n; };
+  var dag = pad(d.getDate()) + '-' + pad(d.getMonth() + 1);
+  var tijd = pad(d.getHours()) + ':' + pad(d.getMinutes());
+  el.textContent = 'Laatst gewijzigd: ' + dag + ' ' + tijd;
 }
 
 // ============================================================
