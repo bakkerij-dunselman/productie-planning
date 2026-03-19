@@ -273,6 +273,8 @@ td.col-prod{max-width:180px;position:sticky;left:0;z-index:10;background:var(--s
 .pcard-actions{display:flex;justify-content:flex-end;padding:2px 10px 6px}
 .pcard-off-btn{background:none;border:1px solid var(--border);border-radius:var(--radius);padding:5px 10px;font-size:11px;color:var(--text-dim);cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:3px}
 .pcard-off-btn:active{background:var(--critical-bg);color:var(--critical);border-color:var(--critical)}
+.pcard-plan-btn{background:var(--brand);border:none;border-radius:var(--radius);padding:5px 10px;font-size:11px;color:#fff;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:3px}
+.pcard-plan-btn:active{opacity:.8}
 .pcard-chev{color:var(--text-dim);font-size:10px;transition:transform .2s;flex-shrink:0;cursor:pointer;padding:8px 6px 8px 2px;align-self:stretch;display:flex;align-items:center}
 .pcard.expanded .pcard-chev{transform:rotate(180deg)}
 /* Expanded card body — only week cards */
@@ -325,6 +327,8 @@ td.vr{font-size:14px;font-weight:700}
 .inp-prod{width:48px;padding:5px 4px;border:1px dashed var(--brand);border-radius:var(--radius);text-align:center;font-size:12px;font-family:var(--font);background:rgba(245,238,244,.7);transition:all .15s;outline:none}
 .inp-prod:focus{border-style:solid;background:rgba(255,255,255,.85);box-shadow:inset 0 0 0 2px var(--brand)}
 .inp-prod::placeholder{color:#ccc}
+.inp-prod-wp{background:rgba(107,69,103,.08);border-color:var(--brand)!important;border-style:solid}
+.wp-badge{font-size:9px;background:rgba(107,69,103,.1);color:var(--brand);padding:1px 4px;border-radius:4px;margin-left:4px;white-space:nowrap}
 .prod-input{margin-top:3px;display:flex;align-items:center;justify-content:center;gap:2px}
 .prod-lbl{font-size:8px;color:var(--brand);font-weight:700;letter-spacing:.3px}
 .suggest{font-size:10px;color:var(--critical);font-weight:700;margin-top:2px}
@@ -390,8 +394,8 @@ td.vr{font-size:14px;font-weight:700}
 .pc-sub{font-size:10px;color:var(--text-dim);display:block;margin-top:1px}
 .pc-del{background:none;border:none;color:var(--critical);font-size:12px;cursor:pointer;padding:4px 6px;flex-shrink:0}
 .pc-chev{color:var(--text-dim);font-size:9px;transition:transform .2s;flex-shrink:0;padding:4px}
-.pc-body{max-height:0;overflow:hidden;transition:max-height .25s ease}
-.pc-body.pc-open{max-height:120px}
+.pc-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.pc-body.pc-open{max-height:320px}
 .pc.pc-expanded .pc-chev{transform:rotate(180deg)}
 .pc-fields{display:flex;flex-wrap:wrap;gap:6px;padding:0 8px 8px 32px;align-items:center}
 .cs{padding:5px 6px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;cursor:pointer;background:var(--surface-sub);color:var(--text-sub);font-family:var(--font);min-height:30px}
@@ -408,7 +412,7 @@ td.vr{font-size:14px;font-weight:700}
 .add-prod-num{width:70px;text-align:right}
 
 /* Views */
-#planView,#beheerView{display:none}#planView.active,#beheerView.active{display:block}
+#planView,#beheerView,#weekplanView,#inpakView,#inpakSettingsView{display:none}#planView.active,#beheerView.active,#weekplanView.active,#inpakView.active,#inpakSettingsView.active{display:block}
 /* Hide plan-only UI when Beheer is active — works across all breakpoints */
 .beheer-active .toolbar,.beheer-active .filter-bar,.beheer-active .mob-action-bar,.beheer-active .legend-bar{display:none !important}
 
@@ -436,9 +440,295 @@ td.vr{font-size:14px;font-weight:700}
 .undo-bar .undo-close:hover{color:#fff}
 
 /* ============================================================
+   WEEKPLANNING TAB
+   ============================================================ */
+#weekplanView{padding:0 8px 80px}
+.wp-header{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 0}
+.wp-nav{background:none;border:1px solid var(--border);border-radius:var(--radius);width:36px;height:36px;font-size:16px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center}
+.wp-nav:hover{background:var(--hover)}
+.wp-title{font-size:16px;font-weight:700;color:var(--text)}
+.wp-copy{background:none;border:1px solid var(--border);border-radius:var(--radius);width:36px;height:36px;font-size:14px;cursor:pointer}
+.wp-copy:hover{background:var(--hover)}
+.wp-summary{text-align:center;font-size:13px;color:var(--text-sub);padding:4px 0 12px}
+.wp-day{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden;min-height:120px}
+.wp-day-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none}
+.wp-day-header:hover{background:var(--hover)}
+.wp-day-left{display:flex;align-items:baseline;gap:6px}
+.wp-day-name{font-weight:700;font-size:14px;color:var(--text)}
+.wp-day-date{font-weight:400;color:var(--text-sub);font-size:12px}
+.wp-day-right{display:flex;align-items:center;gap:8px}
+.wp-day-count{background:var(--brand-surface);color:var(--brand);font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px}
+.wp-day-progress{font-size:11px;color:var(--success);font-weight:600}
+.wp-day-status{font-size:12px}
+.wp-day-info{font-size:12px;color:var(--text-sub)}
+.wp-arrow{font-size:10px;color:var(--text-dim)}
+.wp-day-today,.dc-day-today{border-left:4px solid var(--brand)}
+.wp-day-today .wp-day-name,.dc-day-today .dc-day-name{font-weight:700;color:var(--brand)}
+.wp-day-body{padding:0 14px 14px;min-height:60px}
+.wp-cat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-sub);padding:8px 0 4px 8px;margin-top:4px}
+.wp-prod-row{padding:4px 4px;border-bottom:1px solid var(--border-sub)}
+.wp-prod-main{display:flex;align-items:center;gap:6px}
+.wp-prod-status{cursor:pointer;min-width:22px;text-align:center;font-size:13px}
+.wp-prod-busy{background:rgba(232,168,64,.06)}
+.wp-prod-done{background:rgba(80,180,80,.06)}
+.wp-prod-done .wp-prod-name{text-decoration:line-through;color:var(--text-sub)}
+.wp-prod-done .wp-prod-info{color:var(--text-dim)}
+.wp-prod-settings{display:flex;align-items:center;gap:8px;padding:4px 0 4px 28px;flex-wrap:wrap}
+.wp-prod-settings label{font-size:11px;color:var(--text-sub);display:flex;align-items:center;gap:3px}
+.wp-set-inp{width:44px;padding:3px 4px;border:1px solid var(--border);border-radius:var(--radius);font-size:11px;text-align:right;background:var(--surface);font-family:var(--font)}
+.wp-set-inp:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 2px rgba(107,69,103,.12)}
+.wp-prod-warn-row{background:var(--warning-bg);border-radius:var(--radius);padding:6px 8px 6px 28px;margin:2px 0}
+.wp-prod-warn-txt{font-size:11px;color:var(--warning);font-weight:600;margin-right:8px}
+.wp-move{width:36px;padding:2px;border:1px solid var(--border);border-radius:var(--radius);font-size:11px;background:var(--bg);cursor:pointer}
+.wp-mode-bar{display:flex;gap:8px;align-items:center;padding:8px 12px}
+.wp-mode-btn{padding:4px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-size:12px;cursor:pointer}
+.wp-mode-sel{background:var(--brand);color:#fff;border-color:var(--brand)}
+.wp-print-btn{margin-left:auto;padding:4px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-size:12px;cursor:pointer}
+.wp-daylist{padding:8px 0}
+.wp-daylist-row{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--border)}
+.wp-daylist-check{font-size:20px;cursor:pointer;min-width:28px;text-align:center}
+.wp-daylist-name{font-weight:600;flex:1}
+.wp-daylist-info{font-size:12px;color:var(--text-sub)}
+.wp-daylist-time{font-size:12px;color:var(--brand);font-weight:600}
+.wp-daylist-busy{background:rgba(232,168,64,.1)}
+.wp-daylist-done{background:rgba(80,180,80,.08)}
+.wp-daylist-done .wp-daylist-name{text-decoration:line-through;color:var(--text-sub)}
+.wp-daylist-done .wp-daylist-info,.wp-daylist-done .wp-daylist-time{color:var(--text-dim)}
+.wp-day-nav{display:flex;align-items:center;gap:12px;padding:8px 12px}
+.wp-day-title{font-size:16px;font-weight:700}
+.wp-day-summary{padding:4px 12px;font-size:12px;color:var(--text-sub)}
+.wp-overview{padding:8px 12px;overflow-x:auto}
+.wp-ov-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.wp-ov-tbl th,.wp-ov-tbl td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--border)}
+.wp-ov-dept{text-align:left;font-weight:600;white-space:nowrap}
+.wp-ov-cell{font-weight:500;font-size:11px}
+.wp-ov-total{font-weight:700}
+.wp-prod-row:last-child{border-bottom:none}
+.wp-prod-name{flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wp-inpak-hrs{font-size:11px;color:var(--brand);font-weight:600;white-space:nowrap;min-width:36px;text-align:right}
+.wp-inp{width:56px;padding:6px 4px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;font-size:13px;font-family:var(--font);background:var(--surface)}
+.wp-inp:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 2px rgba(107,69,103,.15)}
+.wp-rm{background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer;padding:2px 6px;border-radius:var(--radius);line-height:1}
+.wp-rm:hover{color:#E85040;background:rgba(232,80,64,.08)}
+.wp-prod-warn{color:var(--warning);font-style:italic}
+.wp-prod-warn a{color:var(--brand);font-style:normal;text-decoration:none;font-weight:600;font-size:11px}
+.wp-prod-warn a:hover{text-decoration:underline}
+.wp-empty{text-align:center;color:var(--text-dim);font-size:13px;padding:16px 0;font-style:italic}
+.wp-cap-bar{background:var(--bg);border-radius:0;padding:6px 14px;font-size:11px;color:var(--text-sub);display:flex;align-items:center;gap:6px;position:relative;overflow:hidden}
+.wp-bezetting-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin:10px 0;flex-wrap:wrap}
+.wp-bez-label{font-size:12px;font-weight:600;color:var(--text-sub);white-space:nowrap}
+.wp-bez-cell{display:flex;flex-direction:column;align-items:center;gap:2px}
+.wp-bez-day{font-size:10px;color:var(--text-dim);font-weight:600}
+.wp-bez-inp{width:40px;padding:4px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;text-align:center;font-family:var(--font);background:var(--surface)}
+.wp-bez-inp:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 2px rgba(107,69,103,.12)}
+.wp-bez-eff{font-size:11px;color:var(--text-dim);margin-left:auto}
+.wp-bez-split{display:flex;flex-direction:column;gap:1px}
+.wp-bez-och{border-color:var(--brand)!important;background:rgba(107,69,103,.04)}
+.wp-bez-mid{border-color:var(--info)!important;background:rgba(44,110,203,.04)}
+
+/* Dagdeel sections */
+.wp-dd{margin:2px 0}
+.wp-dd-header{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:11px;color:var(--text-sub);border-bottom:1px solid var(--border-sub)}
+.wp-dd-icon{font-size:12px}
+.wp-dd-label{font-weight:600;text-transform:uppercase;letter-spacing:.3px;font-size:10px}
+.wp-dd-cap{margin-left:auto;font-size:10px;font-weight:500}
+.wp-dd-empty{text-align:center;color:var(--text-dim);font-size:11px;padding:6px 0;font-style:italic}
+.wp-dd-ochtend .wp-dd-header{color:var(--brand)}
+.wp-dd-middag .wp-dd-header{color:var(--info)}
+.wp-dd-toggle{background:none;border:1px solid var(--border);border-radius:var(--radius);width:24px;height:24px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0}
+.wp-dd-toggle:hover{background:var(--surface-hover);border-color:var(--brand)}
+
+/* Day list sections */
+.wp-dl-section{display:flex;align-items:center;gap:6px;padding:8px 0 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--text-sub);margin-top:4px}
+.wp-dl-section-icon{font-size:12px}
+
+.wp-cap-icon{font-size:14px}
+.wp-cap-delta{font-weight:700}
+.wp-cap-green{color:#2E8B57}
+.wp-cap-orange{color:#E8A840}
+.wp-cap-red{color:#E85040}
+.wp-add-area{margin-top:8px}
+.wp-add-btn{width:100%;padding:10px;border:1px dashed var(--border);border-radius:var(--radius);background:none;color:var(--brand);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)}
+.wp-add-btn:hover{background:rgba(107,69,103,.04);border-color:var(--brand)}
+.wp-add-search{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:var(--font);margin-bottom:4px;box-sizing:border-box}
+.wp-add-search:focus{border-color:var(--brand);outline:none}
+.wp-add-list{max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:4px}
+.wp-add-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wp-add-item:hover{background:var(--hover)}
+.wp-add-item:last-child{border-bottom:none}
+.wp-add-name{font-size:13px;color:var(--text)}
+.wp-add-meta{font-size:11px;color:var(--text-dim)}
+.wp-add-empty{padding:12px;text-align:center;color:var(--text-dim);font-size:12px}
+.wp-add-cancel{width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text-sub);font-size:12px;cursor:pointer;font-family:var(--font)}
+
+/* Department bar */
+.wp-dept-bar{display:flex;gap:4px;padding:0 0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.wp-dept-btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text-sub);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.wp-dept-btn:hover{background:var(--hover)}
+.wp-dept-sel{background:var(--brand);color:#fff;border-color:var(--brand)}
+.wp-dept-cap{font-size:11px;font-weight:600;margin-left:8px}
+.wp-prod-info{font-size:11px;color:var(--text-dim);white-space:nowrap;min-width:120px}
+
+/* Inplan popup */
+.inplan-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;justify-content:center;align-items:center;padding:16px}
+.inplan-popup{background:var(--surface);border-radius:var(--radius-lg);padding:20px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.inplan-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.inplan-header h3{margin:0;font-size:18px;color:var(--text)}
+.inplan-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-dim);padding:0 4px}
+.inplan-product{font-size:15px;font-weight:600;color:var(--text);margin-bottom:12px}
+.inplan-dept{font-size:12px;font-weight:400;color:var(--text-sub)}
+.inplan-week{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px}
+.inplan-week-label{font-size:14px;font-weight:700}
+.inplan-days{display:flex;gap:6px;margin-bottom:16px;justify-content:center}
+.inplan-day-btn{width:48px;height:40px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;font-size:13px;font-weight:600;font-family:var(--font);color:var(--text)}
+.inplan-day-btn:hover{background:var(--hover)}
+.inplan-day-sel{background:var(--brand);color:#fff;border-color:var(--brand)}
+.inplan-batch{margin-bottom:16px}
+.inplan-label{font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:6px}
+.inplan-batch-btns{display:flex;gap:4px;margin-bottom:8px}
+.inplan-batch-btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;font-size:13px;font-family:var(--font);color:var(--text)}
+.inplan-batch-btn:hover{background:var(--hover)}
+.inplan-batch-sel{background:var(--brand);color:#fff;border-color:var(--brand)}
+.inplan-batch-inp{width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:var(--font);text-align:center}
+.inplan-preview{background:var(--bg);border-radius:var(--radius);padding:12px;margin-bottom:16px;font-size:13px;color:var(--text)}
+.inplan-prev-line{margin-bottom:4px}
+.inplan-prev-warn{color:#E8A840;font-size:12px}
+.inplan-confirm{width:100%;padding:12px;border:none;border-radius:var(--radius);background:var(--brand);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.inplan-confirm:hover{opacity:.9}
+
+/* Department settings */
+.wp-dept-settings{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-top:16px;overflow:hidden}
+.wp-dept-settings-header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;user-select:none;font-size:13px;font-weight:600;color:var(--text-sub)}
+.wp-dept-settings-header:hover{background:var(--hover)}
+.wp-dept-settings-body{padding:0 14px 14px}
+.wp-dept-settings-body h4{font-size:12px;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 8px}
+.set-row{display:flex;gap:8px;flex-wrap:wrap}
+.set-cell{display:flex;flex-direction:column;align-items:center;gap:2px}
+.set-cell label{font-size:10px;color:var(--text-dim);font-weight:600}
+.set-oh-row{display:flex;align-items:center;gap:6px;padding:4px 0;flex-wrap:wrap;font-size:12px;color:var(--text)}
+.set-oh-dag{font-weight:700;min-width:24px}
+.set-oh-row label{font-size:11px;color:var(--text-sub)}
+
+/* Production settings in Beheer */
+.pc-prod-settings{border-top:1px solid var(--border-light);padding-top:8px;margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.pc-prod-title{width:100%;font-size:11px;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px}
+
+/* Inplan button in voorraad */
+.wp-plan-btn{background:var(--brand);border:none;color:#fff;font-size:11px;cursor:pointer;padding:2px 6px;border-radius:var(--radius);margin-left:4px;vertical-align:middle}
+.wp-plan-btn:hover{opacity:.8}
+
+/* ============================================================
+   INPAK CAPACITEIT VIEW
+   ============================================================ */
+#inpakView{padding:0 8px 80px}
+#inpakSettingsView{padding:0 8px 80px}
+.dc-header{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px 0}
+.dc-nav-btn{background:none;border:1px solid var(--border);border-radius:var(--radius);width:36px;height:36px;font-size:16px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center}
+.dc-nav-btn:hover{background:var(--hover)}
+.dc-title{font-size:16px;font-weight:700;color:var(--text)}
+.dc-wsummary{text-align:center;font-size:13px;color:var(--text-sub);padding:4px 0 8px}
+.dc-st-green{color:#2E8B57;font-weight:700}
+.dc-st-orange{color:#E8A840;font-weight:700}
+.dc-st-red{color:#E85040;font-weight:700}
+.dc-notice{text-align:center;padding:16px;margin:8px 0;background:var(--warning-bg);border-radius:var(--radius);font-size:13px;color:var(--warning)}
+.dc-notice a{color:var(--brand);text-decoration:underline}
+.dc-day{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden}
+.dc-day-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none}
+.dc-day-hdr:hover{background:var(--hover)}
+.dc-day-name{font-weight:700;font-size:14px;color:var(--text)}
+.dc-day-date{font-weight:400;color:var(--text-sub);font-size:12px;margin-left:4px}
+.dc-day-cap{font-size:12px;font-weight:600}
+.dc-arrow{font-size:10px;color:var(--text-dim)}
+.dc-day-body{padding:0 14px 14px}
+.dc-cat{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-sub);padding:8px 0 4px 8px;margin-top:4px}
+.dc-prod{display:flex;align-items:center;gap:6px;padding:6px 4px;border-bottom:1px solid var(--border-sub);flex-wrap:wrap}
+.dc-prod:last-child{border-bottom:none}
+.dc-prod-name{flex:1;font-size:13px;color:var(--text);min-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dc-prod-stuks{font-size:12px;color:var(--text-sub);min-width:36px;text-align:right}
+.dc-prod-src{font-size:10px;color:var(--text-sub);margin-left:4px}
+.dc-inp{width:56px;padding:6px 4px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;font-size:13px;font-family:var(--font);background:var(--surface)}
+.dc-inp:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 2px rgba(107,69,103,.15)}
+.dc-inp-sm{width:48px;padding:4px;border:1px solid var(--border);border-radius:var(--radius);text-align:center;font-size:12px;font-family:var(--font)}
+.dc-unit{font-size:11px;color:var(--text-dim)}
+.dc-ord{opacity:.5}
+.dc-ord-label{font-size:10px;color:var(--text-dim);font-style:italic;margin-left:auto}
+.dc-reset{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:2px 6px}
+.dc-reset:hover{color:var(--brand)}
+.dc-empty{text-align:center;color:var(--text-dim);font-size:13px;padding:16px 0;font-style:italic}
+.dc-oh-section{margin-top:8px;padding-top:8px;border-top:1px solid var(--border-sub)}
+.dc-oh-title{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-sub);margin-bottom:4px}
+.dc-oh-row{display:flex;align-items:center;gap:6px;padding:3px 4px}
+.dc-oh-label{font-size:12px;color:var(--text);min-width:80px}
+.dc-staff-row{display:flex;align-items:center;gap:6px;padding:8px 4px;margin-top:4px;border-top:1px solid var(--border-sub)}
+.dc-staff-label{font-size:12px;font-weight:600;color:var(--text);min-width:80px}
+.dc-bar{position:relative;height:24px;background:var(--bg);border-radius:var(--radius);overflow:hidden;margin-top:8px}
+.dc-bar-fill{height:100%;border-radius:var(--radius);transition:width .3s}
+.dc-bar-green{background:rgba(46,139,87,.2)}
+.dc-bar-orange{background:rgba(232,168,64,.2)}
+.dc-bar-red{background:rgba(232,80,64,.2)}
+.dc-bar-text{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--text)}
+/* Inpak sub-tabs */
+.ip-tabs{display:flex;gap:0;margin-bottom:12px;border-bottom:1px solid var(--border)}
+.ip-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:500;color:var(--text-sub);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font)}
+.ip-tab:hover{color:var(--text)}
+.ip-tab-act{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+/* Settings classes (shared) */
+.set-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:12px}
+.set-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:12px}
+.set-subtitle{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px}
+.set-row{display:flex;align-items:center;gap:8px;padding:4px 0}
+.set-label{font-size:13px;color:var(--text);min-width:100px}
+.set-inp{width:64px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;text-align:center;font-family:var(--font)}
+.set-inp-wide{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:var(--font);margin-bottom:6px;box-sizing:border-box}
+.set-hint{font-size:11px;color:var(--text-dim);margin-top:4px}
+.set-search{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:var(--font);margin-bottom:8px;box-sizing:border-box}
+.set-btn{padding:8px 16px;background:var(--brand);color:#fff;border:none;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);margin-top:4px}
+.set-btn:hover{background:var(--brand-light)}
+.set-add-section{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.set-prod-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border-sub)}
+.set-prod-row:last-child{border-bottom:none}
+.set-prod-info{flex:1;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.set-prod-code{font-size:11px;color:var(--text-dim)}
+.set-ord-badge{font-size:10px;color:var(--warning);font-weight:600}
+
+/* ============================================================
    PRINT
    ============================================================ */
-@media print{.sidebar,.topbar,.tabs,.toolbar,.filter-bar,.legend-bar{display:none !important}.dash{padding:6px 12px}.tc{max-height:none;overflow:visible}th,td{font-size:10px;padding:4px 6px}}
+@media print{
+  .sidebar,.topbar,.tabs,.toolbar,.filter-bar,.legend-bar,.bottom-tabs,.search-bar,.wp-dept-bar,.wp-mode-bar,.wp-add-area,.wp-bezetting-bar,.wp-dept-settings,.wp-prod-settings,.wp-move,.wp-rm,.wp-print-btn,.wp-copy,.sb-overlay,.mob-action-bar,.last-mod,.toast-bar,.undo-bar{display:none !important}
+  .dash{padding:4px 8px}
+  .tc{max-height:none;overflow:visible}
+  th,td{font-size:10px;padding:4px 6px}
+  body{font-size:11px;background:#fff}
+  #weekplanView{padding:0!important;display:block!important}
+  #weekplanView.active{display:block!important}
+  .wp-header{padding:4px 0;justify-content:center}
+  .wp-nav{display:none}
+  .wp-title{font-size:14px}
+  .wp-summary{font-size:11px;padding:2px 0 6px}
+  .wp-grid{display:block!important}
+  .wp-day{break-inside:avoid;margin-bottom:6px;min-height:auto!important;border:1px solid #999}
+  .wp-day-header{padding:6px 10px}
+  .wp-day-name{font-size:12px}
+  .wp-day-date{font-size:10px}
+  .wp-cap-bar{padding:2px 10px;font-size:9px}
+  .dc-bar-fill{display:none}
+  .wp-day-body{padding:0 10px 6px}
+  .wp-prod-row{border-bottom:1px solid #ddd}
+  .wp-prod-main{gap:4px}
+  .wp-prod-name{font-size:11px}
+  .wp-prod-info{font-size:10px}
+  .wp-prod-status{font-size:11px;min-width:16px}
+  .wp-inp{width:32px;padding:2px;font-size:10px;border:1px solid #ccc}
+  .wp-empty{font-size:10px;padding:4px 0}
+  /* Dag mode print */
+  .wp-daylist-row{font-size:13px;padding:6px 0;border-bottom:1px solid #ccc}
+  .wp-daylist-name{font-weight:700}
+  .wp-day-nav{justify-content:center}
+  .wp-day-nav button{display:none}
+  .wp-day-title{font-size:18px}
+  .wp-day-summary{font-size:11px}
+}
 
 /* ============================================================
    TABLET (>=600px) — Show table, hide cards, show filter bar
@@ -511,6 +801,20 @@ td.vr{font-size:14px;font-weight:700}
   .btn{padding:8px 14px;font-size:13px;min-height:38px}
 
   .ba .btn{flex:0 0 auto}
+
+  /* Weekplanning desktop: 2 columns */
+  #weekplanView{padding:16px 24px 24px}
+  .wp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+  .wp-day{margin-bottom:0}
+  .wp-header{padding:16px 0}
+  .wp-title{font-size:20px}
+  .wp-summary{font-size:14px;padding:6px 0 16px}
+  /* Inpak desktop */
+  #inpakView,#inpakSettingsView{padding:16px 24px 24px}
+  .dc-day{margin-bottom:0}
+  .dc-header{padding:16px 0}
+  .dc-title{font-size:20px}
+  .dc-wsummary{font-size:14px;padding:6px 0 16px}
 }
 
 /* ============================================================
@@ -521,6 +825,10 @@ td.vr{font-size:14px;font-weight:700}
   .toolbar .months-line .ml{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-sub);white-space:nowrap}
   .toolbar .months-row label{flex:0 0 auto;min-width:44px}
   .toolbar .months-row{flex-wrap:nowrap;justify-content:flex-start}
+
+  /* Weekplanning wide desktop: max-width and centered */
+  #weekplanView{max-width:1200px;margin-left:auto;margin-right:auto;padding:20px 32px 32px}
+  #inpakView,#inpakSettingsView{max-width:1200px;margin-left:auto;margin-right:auto;padding:20px 32px 32px}
 }
 
 /* ============================================================
@@ -593,7 +901,7 @@ td.vr{font-size:14px;font-weight:700}
         </div>
       </div>
       <div class="sb-nav">
-        <div class="sb-section-label">Categorie&euml;n</div>
+        <div class="sb-section-label">Voorraad</div>
         <div class="sb-item act" data-cat="Brood" onclick="sbNav('Brood')">
           <span class="cat-dot" style="background:var(--brood)"></span>
           Brood
@@ -618,6 +926,15 @@ td.vr{font-size:14px;font-weight:700}
           <span class="cat-dot" style="background:var(--overig)"></span>
           Inkoop
           <span class="sb-badge" id="sb_cnt_Overig">0</span>
+        </div>
+        <div class="sb-section-label">Planning</div>
+        <div class="sb-item" data-cat="weekplan" onclick="closeSidebar();swW()">
+          <span style="font-size:15px;opacity:.7">&#128197;</span>
+          Productie
+        </div>
+        <div class="sb-item" data-cat="inpak" onclick="closeSidebar();swI()">
+          <span style="font-size:15px;opacity:.7">&#128230;</span>
+          Inpak
         </div>
         <div class="sb-section-label">Instellingen</div>
         <div class="sb-item" data-cat="beheer" onclick="sbNavBeheer()">
@@ -658,39 +975,32 @@ td.vr{font-size:14px;font-weight:700}
         <div class="tab t-bk" onclick="sw('Banket Koud')">B.Koud<span class="c" id="cnt_Banket_Koud">0</span></div>
         <div class="tab t-ch" onclick="sw('Chocolaterie')">Choco<span class="c" id="cnt_Chocolaterie">0</span></div>
         <div class="tab t-ov" onclick="sw('Overig')">Inkoop<span class="c" id="cnt_Overig">0</span></div>
-        <div class="tab t-bh" onclick="swB()">Beheer</div>
+        <div class="tab t-wp" onclick="swW()">&#128197; Productie</div>
+        <div class="tab t-ip" onclick="swI()">&#128230; Inpak</div>
+        <div class="tab t-bh" onclick="swB()">&#9881; Beheer</div>
       </div>
 
       <!-- Bottom tab bar (mobile only, hidden on tablet+) -->
       <nav class="bottom-tabs" id="bottomTabs">
-        <div class="btab act" data-cat="Brood" onclick="sw('Brood')">
-          <span class="btab-icon">&#127838;</span>
-          <span class="btab-label">Brood</span>
-          <span class="btab-badge" id="bcnt_Brood">0</span>
+        <div class="btab act" data-cat="voorraad" onclick="sw(cD)">
+          <span class="btab-icon">&#128202;</span>
+          <span class="btab-label">Voorraad</span>
         </div>
-        <div class="btab" data-cat="Banket Warm" onclick="sw('Banket Warm')">
-          <span class="btab-icon">&#127850;</span>
-          <span class="btab-label">B.Warm</span>
-          <span class="btab-badge" id="bcnt_Banket_Warm">0</span>
+        <div class="btab" data-cat="weekplan" onclick="swW()">
+          <span class="btab-icon">&#128197;</span>
+          <span class="btab-label">Productie</span>
         </div>
-        <div class="btab" data-cat="Banket Koud" onclick="sw('Banket Koud')">
-          <span class="btab-icon">&#127856;</span>
-          <span class="btab-label">B.Koud</span>
-          <span class="btab-badge" id="bcnt_Banket_Koud">0</span>
-        </div>
-        <div class="btab" data-cat="Chocolaterie" onclick="sw('Chocolaterie')">
-          <span class="btab-icon">&#127851;</span>
-          <span class="btab-label">Choco</span>
-          <span class="btab-badge" id="bcnt_Chocolaterie">0</span>
-        </div>
-        <div class="btab" data-cat="Overig" onclick="sw('Overig')">
+        <div class="btab" data-cat="inpak" onclick="swI()">
           <span class="btab-icon">&#128230;</span>
-          <span class="btab-label">Inkoop</span>
-          <span class="btab-badge" id="bcnt_Overig">0</span>
+          <span class="btab-label">Inpak</span>
         </div>
         <div class="btab" data-cat="beheer" onclick="swB()">
           <span class="btab-icon">&#9881;</span>
           <span class="btab-label">Beheer</span>
+        </div>
+        <div class="btab" onclick="openSidebar()">
+          <span class="btab-icon">&#9776;</span>
+          <span class="btab-label">Meer</span>
         </div>
       </nav>
 
@@ -798,6 +1108,7 @@ td.vr{font-size:14px;font-weight:700}
           <div class="tg"><label>Groeifactor</label><input type="number" id="xf" value="1.1" step="0.05" min="1" max="2" onchange="calc()"></div>
           <div class="tg"><label>Seizoensmarge</label><input type="number" id="mg" value="0.1" step="0.05" min="0" max="1" onchange="calc()"></div>
           <div class="tg"><label>Buffer (wkn)</label><input type="number" id="bufWk" value="1.5" step="0.5" min="0" max="10" onchange="calc()"></div>
+          <div class="tg"><label>Factor</label><input type="number" id="seasonFactor" value="1.0" min="0.5" max="5" step="0.1" onchange="calc()" title="Seizoensfactor (bijv. 1.5 voor Pasen)"></div>
           <div class="tg"><label>Drempel</label><input type="number" id="drempel" value="50" min="0" onchange="drempel=parseInt(this.value)||50"></div>
         </div>
 
@@ -875,6 +1186,18 @@ td.vr{font-size:14px;font-weight:700}
           </div>
         </div>
 
+        <!-- Weekplanning View (Productie) -->
+        <div id="weekplanView"></div>
+
+        <!-- Inpak Capaciteit View -->
+        <div id="inpakView">
+          <div class="ip-tabs">
+            <button class="ip-tab ip-tab-act" data-tab="planning" onclick="ipSwitchTab('planning')">&#128230; Capaciteit</button>
+            <button class="ip-tab" data-tab="settings" onclick="ipSwitchTab('settings')">&#9881; Instellingen</button>
+          </div>
+        </div>
+        <div id="inpakSettingsView"></div>
+
         <!-- Beheer View -->
         <div id="beheerView">
           <div class="bb">
@@ -949,6 +1272,9 @@ var tht = {}; // THT/houdbaarheid in weken {code: number}
 var md = {}; // Manual demand override {code: number} (weekly)
 var cp = []; // Custom products added by user [{code, name, category}]
 var xo = {}; // Extra orders per product per week {code: {weekIndex: amount}}
+var ps = {}; // Production settings {code: {pt: productieTijd, it: inpakTijd, bo: batchOutput}}
+var deptCfg = {}; // Department config {dept: {beschikbaar:{dag:uren}, overhead:{dag:{pauze,schoonmaak,overleg}}, efficiency:0.85}}
+var wpShowAll = false; // Show all departments in weekplanning (totaal mode)
 var cD = 'Brood'; // Current department
 var cV = 'p'; // Current view ('p' = planning, 'b' = beheer)
 var currentPeriod = 'year'; // Current period
@@ -1201,6 +1527,19 @@ function sProd(code, weekIdx, val) {
   if (!prod[code]) prod[code] = {};
   prod[code][weekIdx] = (typeof val === 'number' && val >= 0) ? val : 0;
   _ls('prod', prod);
+}
+
+/** Get total production output from weekplan for a product in a specific week */
+function getWeekplanProduction(code, weekNr, year) {
+  if (weekNr !== wpWeek || year !== wpYear) return 0;
+  var total = 0;
+  for (var dept in wpData) {
+    for (var dag in (wpData[dept] || {})) {
+      var entry = (wpData[dept][dag] || {})[code];
+      if (entry && entry.output) total += entry.output;
+    }
+  }
+  return total;
 }
 
 // ============================================================
@@ -1478,6 +1817,7 @@ function fbInit(config) {
     _ls('fbConfig', config);
     // Start realtime listeners
     fbListen();
+    fbListenDeptCfg();
     return true;
   } catch(e) {
     console.error('Firebase init error:', e);
@@ -1516,7 +1856,7 @@ function fbWrite(key, val) {
 /** Start realtime listeners for all data keys */
 function fbListen() {
   if (!fbDb) return;
-  var keys = ['en', 'co', 'sk', 'ov', 'bt', 'prod', 'tht', 'md', 'cp', 'xo'];
+  var keys = ['en', 'co', 'sk', 'ov', 'bt', 'prod', 'tht', 'md', 'cp', 'xo', 'ps'];
   keys.forEach(function(key) {
     fbDb.ref('dashboard/' + key).on('value', function(snap) {
       if (fbSyncPaused) return;
@@ -1534,6 +1874,7 @@ function fbListen() {
         case 'md': md = val; break;
         case 'cp': if (Array.isArray(val)) { cp = val; restoreCustomProducts(); } break;
         case 'xo': xo = val || {}; break;
+        case 'ps': ps = val || {}; break;
       }
       // Also save to localStorage
       _ls(key, val);
@@ -1570,6 +1911,117 @@ function fbPushAll() {
   fbWrite('md', md);
   fbWrite('cp', cp);
   fbWrite('xo', xo);
+  fbWrite('ps', ps);
+}
+
+/** Listen for department config changes */
+function fbListenDeptCfg() {
+  if (!fbDb) return;
+  fbDb.ref('afdelingen').on('value', function(snap) {
+    var val = snap.val();
+    if (val) {
+      deptCfg = val;
+      try { localStorage.setItem('deptCfg', JSON.stringify(val)); } catch(e) {}
+      if (cV === 'w') renderWeekplanning();
+    }
+  });
+}
+
+/** Load department config from localStorage */
+function loadDeptCfg() {
+  try {
+    var v = localStorage.getItem('deptCfg');
+    if (v) deptCfg = JSON.parse(v);
+  } catch(e) {}
+}
+
+/** Get department config with defaults */
+var WP_DAGEN_K = ['ma','di','wo','do','vr'];
+function gDeptCfg(dept) {
+  var cfg = deptCfg[dept] || {};
+  var defBeschikbaar = {ma:8, di:8, wo:8, do:8, vr:8};
+  var defOverhead = {};
+  WP_DAGEN_K.forEach(function(d) { defOverhead[d] = {pauze:0.5, schoonmaak:0.5, overleg:0}; });
+  return {
+    beschikbaar: cfg.beschikbaar || defBeschikbaar,
+    overhead: cfg.overhead || defOverhead,
+    efficiency: cfg.efficiency !== undefined ? cfg.efficiency : 0.85
+  };
+}
+
+/** Get ochtend/middag split hours for a department on a day */
+function getDagdeelUren(dept, dag) {
+  var cfg = gDeptCfg(dept);
+  var total = (cfg.beschikbaar && cfg.beschikbaar[dag]) || 8;
+  // If stored as object, use values; otherwise split 60/40
+  if (typeof total === 'object') {
+    return { ochtend: total.ochtend || 5, middag: total.middag || 3 };
+  }
+  var och = Math.round(total * 0.625 * 10) / 10;
+  var mid = Math.round((total - och) * 10) / 10;
+  return { ochtend: och, middag: mid };
+}
+
+/** Save department config to Firebase */
+function saveDeptCfg(dept) {
+  try { localStorage.setItem('deptCfg', JSON.stringify(deptCfg)); } catch(e) {}
+  if (fbDb && fbConnected) {
+    try { fbDb.ref('afdelingen/' + dept).set(deptCfg[dept]); } catch(e) {}
+  }
+}
+
+/** Set department available hours */
+function setDeptBeschikbaar(dept, dag, val) {
+  var v = parseFloat(val); if (isNaN(v) || v < 0) v = 0;
+  if (!deptCfg[dept]) deptCfg[dept] = {};
+  if (!deptCfg[dept].beschikbaar) deptCfg[dept].beschikbaar = {ma:8,di:8,wo:8,do:8,vr:8};
+  deptCfg[dept].beschikbaar[dag] = v;
+  saveDeptCfg(dept);
+}
+
+/** Set dagdeel hours (ochtend or middag) */
+function setDeptDagdeel(dept, dag, deel, val) {
+  var v = parseFloat(val); if (isNaN(v) || v < 0) v = 0;
+  if (!deptCfg[dept]) deptCfg[dept] = {};
+  if (!deptCfg[dept].beschikbaar) deptCfg[dept].beschikbaar = {};
+  var current = deptCfg[dept].beschikbaar[dag];
+  if (typeof current !== 'object') {
+    var total = current || 8;
+    current = { ochtend: Math.round(total * 0.625 * 10) / 10, middag: Math.round(total * 0.375 * 10) / 10 };
+  }
+  current[deel] = v;
+  deptCfg[dept].beschikbaar[dag] = current;
+  saveDeptCfg(dept);
+}
+
+/** Set department overhead item */
+function setDeptOverhead(dept, dag, item, val) {
+  var v = parseFloat(val); if (isNaN(v) || v < 0) v = 0;
+  if (!deptCfg[dept]) deptCfg[dept] = {};
+  if (!deptCfg[dept].overhead) deptCfg[dept].overhead = {};
+  if (!deptCfg[dept].overhead[dag]) deptCfg[dept].overhead[dag] = {pauze:0.5,schoonmaak:0.5,overleg:0};
+  deptCfg[dept].overhead[dag][item] = v;
+  saveDeptCfg(dept);
+}
+
+/** Set department efficiency */
+function setDeptEfficiency(dept, val) {
+  var v = parseFloat(val); if (isNaN(v) || v < 0) v = 0; if (v > 1) v = v / 100;
+  if (!deptCfg[dept]) deptCfg[dept] = {};
+  deptCfg[dept].efficiency = v;
+  saveDeptCfg(dept);
+}
+
+/** Get production settings for a product */
+function gPs(code) { return ps[code] || {pt:0, it:0, bo:0, lt:0}; }
+
+/** Set production setting field */
+function sPs(code, field, val) {
+  var v = parseFloat(val) || 0;
+  if (!ps[code]) ps[code] = {pt:0, it:0, bo:0, lt:0};
+  ps[code][field] = v;
+  _ls('ps', ps);
+  fbWrite('ps', ps);
 }
 
 /** Show Firebase setup dialog */
@@ -1674,8 +2126,8 @@ function sv() { sEn(); }
  */
 function ld() {
   // Step 1: Always load from localStorage (instant, works offline)
-  var keys = ['en', 'co', 'sk', 'ov', 'bt', 'prod', 'tht', 'md', 'cp', 'xo'];
-  var refs = {en: en, co: co, sk: sk, ov: ov, bt: bt, prod: prod, tht: tht, md: md, cp: cp, xo: xo};
+  var keys = ['en', 'co', 'sk', 'ov', 'bt', 'prod', 'tht', 'md', 'cp', 'xo', 'ps'];
+  var refs = {en: en, co: co, sk: sk, ov: ov, bt: bt, prod: prod, tht: tht, md: md, cp: cp, xo: xo, ps: ps};
   keys.forEach(function(key) {
     var saved = _ll(key);
     if (saved === null) return;
@@ -1690,6 +2142,7 @@ function ld() {
       case 'md': md = saved; break;
       case 'cp': if (Array.isArray(saved)) cp = saved; break;
       case 'xo': xo = saved || {}; break;
+      case 'ps': ps = saved || {}; break;
     }
   });
 
@@ -1773,14 +2226,95 @@ function rstDef() {
 // UI / VIEW MANAGEMENT
 // ============================================================
 
-/** Switch to department/planning view */
-function sw(d) {
-  if (DP.indexOf(d) !== -1) {
-    cD = d;
-    cV = 'p';
-    planSortFrozen = false;
-    planOrderCache = null;
+/** Central view-switching helper. showView = 'p'|'w'|'i'|'b', tabSel/sbSel = CSS selectors for active tab/sidebar */
+function _switchView(showView, tabSel, btabCat, sbCat) {
+
+  if (typeof document === 'undefined') return;
+  var views = {
+    p: 'planView', w: 'weekplanView', i: 'inpakView', b: 'beheerView'
+  };
+  var showToolbar = (showView === 'p');
+  // Show/hide views
+  for (var v in views) {
+    var el = document.getElementById(views[v]);
+    if (!el) continue;
+    if (v === showView) {
+      el.style.display = (v === 'p') ? '' : 'block';
+      el.classList.add('active');
+    } else {
+      el.style.display = 'none';
+      el.classList.remove('active');
+    }
   }
+  // Always hide inpakSettingsView
+  var isv = document.getElementById('inpakSettingsView');
+  if (isv) isv.style.display = 'none';
+  // Toolbar/filters: show only for voorraad
+  var toolbar = document.querySelector('.toolbar');
+  var filterBar = document.querySelector('.filter-bar');
+  var legendBar = document.querySelector('.legend-bar');
+  var mobAction = document.getElementById('mobActionBar');
+  if (toolbar) toolbar.style.display = showToolbar ? '' : 'none';
+  if (filterBar) filterBar.style.display = showToolbar ? '' : 'none';
+  if (legendBar) legendBar.style.display = showToolbar ? '' : 'none';
+  if (mobAction) mobAction.style.display = showToolbar ? '' : 'none';
+  // Search bar: only show on voorraad and beheer
+  var searchBar = document.getElementById('searchBar');
+  if (searchBar) searchBar.style.display = (showView === 'p' || showView === 'b') ? '' : 'none';
+  // Tab active states (desktop + mobile)
+  var tabs = document.querySelectorAll('.tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('act');
+  if (tabSel) { var t = document.querySelector(tabSel); if (t) t.classList.add('act'); }
+  // Bottom tabs
+  var btabs = document.querySelectorAll('.btab');
+  for (var j = 0; j < btabs.length; j++) {
+    var cat = btabs[j].getAttribute('data-cat');
+    if (cat === btabCat) btabs[j].classList.add('act');
+    else btabs[j].classList.remove('act');
+  }
+  // Sidebar
+  var sbItems = document.querySelectorAll('.sb-item');
+  for (var k = 0; k < sbItems.length; k++) {
+    var sc = sbItems[k].getAttribute('data-cat');
+    if (sc === sbCat) sbItems[k].classList.add('act');
+    else sbItems[k].classList.remove('act');
+  }
+  // Body class for beheer-specific CSS
+  document.body.classList.toggle('beheer-active', showView === 'b');
+  // Dept name in topbar
+  if (showView === 'p') {
+    var dn = document.getElementById('cDeptName');
+    if (dn) dn.textContent = cD;
+  }
+}
+
+/** Switch to department/planning view (or update dept within weekplan/inpak) */
+function sw(d) {
+  if (DP.indexOf(d) === -1) return;
+  cD = d;
+  // If currently on weekplan view, just update the dept and re-render weekplanning
+  if (cV === 'w') {
+    wpShowAll = false;
+    renderWeekplanning();
+    // Update sidebar active state
+    var sbItems = document.querySelectorAll('.sb-item');
+    for (var k = 0; k < sbItems.length; k++) {
+      var sc = sbItems[k].getAttribute('data-cat');
+      if (sc === d) sbItems[k].classList.add('act');
+      else if (DP.indexOf(sc) !== -1) sbItems[k].classList.remove('act');
+    }
+    return;
+  }
+  // If currently on inpak view, just update the dept
+  if (cV === 'i') {
+    if (typeof ipRenderAll === 'function') { try { ipRenderAll(); } catch(e) {} }
+    return;
+  }
+  // Default: switch to voorraad view
+  cV = 'p';
+  planSortFrozen = false;
+  planOrderCache = null;
+  _switchView('p', '.tab[onclick*="sw(\'' + d + '\')"]', 'voorraad', d);
   if (typeof calc === 'function' && typeof document !== 'undefined') {
     try { calc(); } catch(e) {}
   }
@@ -1789,6 +2323,7 @@ function sw(d) {
 /** Switch to beheer view */
 function swB() {
   cV = 'b';
+  _switchView('b', '.tab.t-bh', 'beheer', 'beheer');
   if (typeof rB === 'function' && typeof document !== 'undefined') {
     try { rB(); } catch(e) {}
   }
@@ -2063,13 +2598,16 @@ function rB() {
         var ovVal = gOV(p.code);
         var isOff = !io(p.code);
         var isCustom = p.code.indexOf('CP_') === 0;
+        var psCfg = gPs(p.code);
+        var psOk = psCfg.pt > 0 || psCfg.it > 0 || psCfg.bo > 0;
         html += '<div class="pc' + (isOff ? ' pc-disabled' : '') + (isCustom ? ' pc-custom' : '') + '">';
         // Row: checkbox | name + meta | chevron
         html += '<div class="pc-row">';
         html += '<input type="checkbox" ' + (io(p.code) ? 'checked' : '') + ' onchange="event.stopPropagation();tEn(this.checked,\'' + p.code + '\')">';
         html += '<div class="pc-info" onclick="bhToggleCard(\'' + p.code + '\')">';
         html += '<span class="pn">' + p.name + (isCustom ? ' <span style="font-size:9px;color:var(--brand)">(handm.)</span>' : '') + '</span>';
-        html += '<span class="pc-sub">' + p.code + ' &middot; ' + Math.round(demand) + '/wk' + (ovVal > 1 ? ' &middot; OV:' + ovVal : '') + '</span>';
+        var psTag = psOk ? ' &middot; <span style="color:var(--brand);font-size:10px" title="Productie-instellingen ingesteld">&#9881; prod</span>' : '';
+        html += '<span class="pc-sub">' + p.code + ' &middot; ' + Math.round(demand) + '/wk' + (ovVal > 1 ? ' &middot; OV:' + ovVal : '') + psTag + '</span>';
         html += '</div>';
         if (isCustom) {
           html += '<button class="pc-del" onclick="event.stopPropagation();if(confirm(\'Product \\u0027' + p.name.replace(/'/g, "\\'") + '\\u0027 verwijderen?\')){rmProduct(\'' + p.code + '\');uC();rB()}" title="Verwijder">\u2715</button>';
@@ -2089,6 +2627,14 @@ function rB() {
           html += '<option' + (d === gC(p) ? ' selected' : '') + '>' + d + '</option>';
         });
         html += '</select></div>';
+        // Production settings (psCfg already declared above)
+        html += '<div class="pc-prod-settings">';
+        html += '<div class="pc-prod-title">Productie-instellingen</div>';
+        html += '<div class="ov-field"><span class="ov-label">Prod.tijd:</span><input class="ov-inp" value="' + (psCfg.pt || '') + '" placeholder="0" title="Productie-uren per batch" onchange="sPs(\'' + p.code + '\',\'pt\',this.value);rB()"><span style="font-size:9px;color:#999">uur/batch</span></div>';
+        html += '<div class="ov-field"><span class="ov-label">Inpak.tijd:</span><input class="ov-inp" value="' + (psCfg.it || '') + '" placeholder="0" title="Inpak-uren per batch" onchange="sPs(\'' + p.code + '\',\'it\',this.value);rB()"><span style="font-size:9px;color:#999">uur/batch</span></div>';
+        html += '<div class="ov-field"><span class="ov-label">Batch:</span><input class="ov-inp" value="' + (psCfg.bo || '') + '" placeholder="0" title="Stuks output per batch" onchange="sPs(\'' + p.code + '\',\'bo\',this.value);rB()"><span style="font-size:9px;color:#999">stuks</span></div>';
+        html += '<div class="ov-field"><span class="ov-label">Doorlooptijd:</span><input class="ov-inp" value="' + (psCfg.lt || '') + '" placeholder="0" type="number" min="0" max="8" title="Dagdelen tussen productie en inpak (0=zelfde dagdeel, 1=volgende, 2=volgende dag ochtend)" onchange="sPs(\'' + p.code + '\',\'lt\',this.value);rB()"><span style="font-size:9px;color:#999">dagdelen</span></div>';
+        html += '</div>';
         html += '</div></div>';
         html += '</div>';
       });
@@ -2179,6 +2725,32 @@ function buildWeekHeader() {
   return html;
 }
 
+/** Calculate urgency for ALL products across all departments (used by weekplan add-panel) */
+function calcAllUrgency() {
+  if (typeof document === 'undefined') return;
+  var nw = parseInt(document.getElementById('wks') && document.getElementById('wks').value) || 6;
+  var xf = parseFloat(document.getElementById('xf') && document.getElementById('xf').value) || 1.1;
+  var mg = parseFloat(document.getElementById('mg') && document.getElementById('mg').value) || 0.1;
+  var seasonFactor = parseFloat(document.getElementById('seasonFactor') && document.getElementById('seasonFactor').value) || 1.0;
+  P.forEach(function(p) {
+    if (!io(p.code)) return;
+    var demand = getWeeklyDemand(p, currentPeriod);
+    var verkoop = Math.round(demand * xf * (1 + mg) * seasonFactor);
+    var telling = getActualStock(p.code);
+    var ovVal = gOV(p.code);
+    var stock = telling * ovVal;
+    p._urgency = nw + 1;
+    var tempStock = stock;
+    for (var w = 0; w < nw; w++) {
+      var extraOrder = gXo(p.code, w);
+      tempStock = tempStock - verkoop - extraOrder;
+      if (tempStock < 0 && p._urgency > nw) {
+        p._urgency = w;
+      }
+    }
+  });
+}
+
 /** Main calculation */
 function calc() {
   if (typeof document === 'undefined') return;
@@ -2188,6 +2760,7 @@ function calc() {
   var mg = parseFloat(document.getElementById('mg') && document.getElementById('mg').value) || 0.1;
   var ut = false;
   var bufWk = parseFloat(document.getElementById('bufWk') && document.getElementById('bufWk').value) || 1.5;
+  var seasonFactor = parseFloat(document.getElementById('seasonFactor') && document.getElementById('seasonFactor').value) || 1.0;
   var srch = (document.getElementById('srch') && document.getElementById('srch').value || '').toLowerCase();
 
   var pd = document.getElementById('pd');
@@ -2207,7 +2780,7 @@ function calc() {
   // Pre-calculate urgency for sorting: in which week does stock run out?
   products.forEach(function(p) {
     var demand = getWeeklyDemand(p, currentPeriod);
-    var verkoop = Math.round(demand * xf * (1 + mg));
+    var verkoop = Math.round(demand * xf * (1 + mg) * seasonFactor);
     var telling = getActualStock(p.code);
     var ovVal = gOV(p.code);
     var stock = telling * ovVal;
@@ -2298,14 +2871,24 @@ function calc() {
     else if (p._urgency <= nw) urgBadge = '<span class="urg urg-later">W+' + p._urgency + '</span>';
 
     html += '<tr>';
-    html += '<td class="col-prod"><span class="prod-name">' + p.name + '</span>' + (urgBadge ? ' ' + urgBadge : '') + '<span class="plan-off" onclick="tEn(false,\'' + p.code + '\');calc()" title="Product uitzetten">\u2715</span><span class="prod-code">' + p.code + '</span></td>';
+    var planBtn = '<button class="wp-plan-btn" onclick="event.stopPropagation();openInplanPopup(\'' + p.code + '\')" title="Inplannen op productieplanning">&#128197;</button>';
+    var wpTotal = getWeekplanProduction(p.code, wpWeek, wpYear);
+    var wpBadge = wpTotal > 0 ? '<span class="wp-badge" title="Ingepland: ' + wpTotal + ' stuks in week ' + wpWeek + '">&#128197; ' + wpTotal + '</span>' : '';
+    html += '<td class="col-prod"><span class="prod-name">' + p.name + '</span>' + wpBadge + (urgBadge ? ' ' + urgBadge : '') + planBtn + '<span class="plan-off" onclick="tEn(false,\'' + p.code + '\');calc()" title="Product uitzetten">\u2715</span><span class="prod-code">' + p.code + '</span></td>';
     html += '<td class="r vk">' + verkoop + '</td>';
     html += '<td class="r"><input class="inp telling" value="' + telling + '" onchange="uS(\'' + p.code + '\',parseInt(this.value)||0);planSortFrozen=true;if(typeof cellFlash===\'function\')cellFlash(this);if(typeof showToast===\'function\')showToast(\'Telling opgeslagen\');calc()"></td>';
     html += '<td class="r vr">' + stock + '</td>';
 
     // Week-voor-week berekening met productie-invoer (stuks) en extra orders
     for (var w = 0; w < nw; w++) {
-      var prodInput = gProd(p.code, w); // in stuks
+      var manualProd = gProd(p.code, w); // Handmatige input (stuks)
+      var weekDate = new Date(startDate);
+      weekDate.setDate(weekDate.getDate() + (w * 7));
+      var thisWeekNr = getISOWeek(weekDate);
+      var thisYear = weekDate.getFullYear();
+      var wpProd = getWeekplanProduction(p.code, thisWeekNr, thisYear);
+      var prodInput = manualProd > 0 ? manualProd : wpProd;
+      var prodFromWP = (manualProd === 0 && wpProd > 0);
       var extraOrder = gXo(p.code, w);
       stock = stock + prodInput - verkoop - extraOrder;
 
@@ -2317,8 +2900,10 @@ function calc() {
 
       html += '<td class="' + cls + '">';
       html += '<div class="stock-line">' + Math.round(stock) + '</div>';
-      // Productie invoerveld (stuks) — paars label
-      html += '<div class="prod-input"><span class="prod-lbl">Prod</span><input class="inp inp-prod" value="' + (prodInput || '') + '" placeholder="\u00b7" title="Productie in stuks" onchange="sProd(\'' + p.code + '\',' + w + ',parseInt(this.value)||0);planSortFrozen=true;if(typeof cellFlash===\'function\')cellFlash(this);if(typeof showToast===\'function\')showToast(\'Productie opgeslagen\');calc()"></div>';
+      // Productie invoerveld (stuks) — paars label; shows weekplan value if no manual input
+      var prodClass = 'inp inp-prod' + (prodFromWP ? ' inp-prod-wp' : '');
+      var prodLbl = prodFromWP ? '&#128197;' : 'Prod';
+      html += '<div class="prod-input"><span class="prod-lbl">' + prodLbl + '</span><input class="' + prodClass + '" value="' + (prodInput || '') + '" placeholder="\u00b7" title="' + (prodFromWP ? 'Uit weekplan: ' + wpProd + ' stuks' : 'Productie in stuks') + '" onchange="sProd(\'' + p.code + '\',' + w + ',parseInt(this.value)||0);planSortFrozen=true;if(typeof cellFlash===\'function\')cellFlash(this);if(typeof showToast===\'function\')showToast(\'Productie opgeslagen\');calc()"></div>';
       // Extra order invoerveld (eenmalige bestelling) — oranje label
       if (extraOrder > 0) {
         html += '<div class="xo-line"><span class="xo-lbl">Best</span><input class="inp inp-xo" value="' + extraOrder + '" onchange="sXo(\'' + p.code + '\',' + w + ',parseInt(this.value)||0);planSortFrozen=true;if(typeof cellFlash===\'function\')cellFlash(this);if(typeof showToast===\'function\')showToast(\'Bestelling opgeslagen\');calc()" title="Extra bestelling deze week"></div>';
@@ -2395,6 +2980,7 @@ function expCSV() {
 /** Main init */
 function init() {
   ld(); // Load saved data
+  loadDeptCfg(); // Load department config
   restoreCustomProducts(); // Restore user-added products into P array
   initEnable(); // Initialize enable list
 
@@ -2465,6 +3051,1511 @@ function init() {
     calc();
     if (typeof renderLastModified === 'function') renderLastModified();
   }
+}
+
+// ============================================================
+// INPLAN POPUP — Schedule products from voorraadoverzicht
+// ============================================================
+var inplanCode = null;   // Product being scheduled
+var inplanWeek = 0;      // Target week
+var inplanYear = 2026;   // Target year
+var inplanDag = 'ma';    // Selected day
+var inplanBatches = 1;   // Number of batches
+
+function openInplanPopup(code) {
+  inplanCode = code;
+  // Default to current weekplanning week, or current week
+  if (wpWeek > 0) { inplanWeek = wpWeek; inplanYear = wpYear; }
+  else {
+    var now = new Date();
+    var d = new Date(now); d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+    inplanYear = d.getFullYear();
+    inplanWeek = getISOWeek(now);
+  }
+  inplanDag = 'ma';
+  inplanBatches = 1;
+  renderInplanPopup();
+}
+
+function closeInplanPopup() {
+  inplanCode = null;
+  if (typeof document === 'undefined') return;
+  var overlay = document.getElementById('inplanOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function inplanSetDag(dag) { inplanDag = dag; renderInplanPopup(); }
+function inplanSetBatches(val) { inplanBatches = parseFloat(val) || 1; renderInplanPopup(); }
+function inplanChangeWeek(delta) {
+  inplanWeek += delta;
+  if (inplanWeek < 1) { inplanWeek = 52; inplanYear--; }
+  if (inplanWeek > 52) { inplanWeek = 1; inplanYear++; }
+  renderInplanPopup();
+}
+
+function renderInplanPopup() {
+  if (!inplanCode) return;
+  if (typeof document === 'undefined') return;
+  var overlay = document.getElementById('inplanOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'inplanOverlay';
+    overlay.className = 'inplan-overlay';
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display = 'flex';
+  overlay.onclick = function(e) { if (e.target === overlay) closeInplanPopup(); };
+
+  var p = wpGetProduct(inplanCode);
+  var pName = p ? p.name : inplanCode;
+  var dept = p ? gC(p) : 'Overig';
+  var psCfg = gPs(inplanCode);
+  var prodUren = Math.round((inplanBatches * (psCfg.pt || 0)) * 10) / 10;
+  var inpakUren = Math.round((inplanBatches * (psCfg.it || 0)) * 10) / 10;
+  var output = Math.round(inplanBatches * (psCfg.bo || 0));
+
+  var html = '<div class="inplan-popup">';
+  html += '<div class="inplan-header"><h3>Inplannen</h3><button class="inplan-close" onclick="closeInplanPopup()">&times;</button></div>';
+  html += '<div class="inplan-product">' + pName + ' <span class="inplan-dept">' + dept + '</span></div>';
+
+  // Week nav
+  html += '<div class="inplan-week">';
+  html += '<button class="wp-nav" onclick="inplanChangeWeek(-1)">&#9664;</button>';
+  html += '<span class="inplan-week-label">Week ' + inplanWeek + ' &mdash; ' + inplanYear + '</span>';
+  html += '<button class="wp-nav" onclick="inplanChangeWeek(1)">&#9654;</button>';
+  html += '</div>';
+
+  // Day selector
+  html += '<div class="inplan-days">';
+  WP_DAGEN.forEach(function(d) {
+    html += '<button class="inplan-day-btn' + (inplanDag === d ? ' inplan-day-sel' : '') + '" onclick="inplanSetDag(\'' + d + '\')">' + WP_DAG_NAMEN[d].substring(0,2) + '</button>';
+  });
+  html += '</div>';
+
+  // Batch input
+  html += '<div class="inplan-batch">';
+  html += '<span class="inplan-label">Batches:</span>';
+  html += '<div class="inplan-batch-btns">';
+  [0.5, 1, 1.5, 2, 3].forEach(function(v) {
+    html += '<button class="inplan-batch-btn' + (inplanBatches === v ? ' inplan-batch-sel' : '') + '" onclick="inplanSetBatches(' + v + ')">' + v + '</button>';
+  });
+  html += '</div>';
+  html += '<input type="number" class="inplan-batch-inp" value="' + inplanBatches + '" min="0.5" step="0.5" onchange="inplanSetBatches(this.value)">';
+  html += '</div>';
+
+  // Preview
+  html += '<div class="inplan-preview">';
+  if (psCfg.pt > 0 || psCfg.it > 0 || psCfg.bo > 0) {
+    html += '<div class="inplan-prev-line">' + inplanBatches + ' batch = <strong>' + output + ' stuks</strong></div>';
+    html += '<div class="inplan-prev-line">Productie: <strong>' + prodUren + 'h</strong> &middot; Inpak: <strong>' + inpakUren + 'h</strong></div>';
+    // Lead time info
+    var lt = psCfg.lt || 0;
+    if (lt > 0) {
+      var dagIdx = WP_DAGEN.indexOf(inplanDag);
+      var inpakIdx = dagIdx + lt;
+      var inpakDagNaam = inpakIdx < WP_DAGEN.length ? WP_DAG_NAMEN[WP_DAGEN[inpakIdx]] : 'volgende week';
+      html += '<div class="inplan-prev-line" style="color:var(--brand);font-weight:600">&#9202; Productie ' + WP_DAG_NAMEN[inplanDag] + ' &rarr; inpak ' + inpakDagNaam + ' (lead: +' + lt + 'dag)</div>';
+      if (inpakIdx >= WP_DAGEN.length) {
+        html += '<div class="inplan-prev-warn">Let op: inpak valt buiten deze week!</div>';
+      }
+    }
+  } else {
+    html += '<div class="inplan-prev-warn">Geen productie-instellingen gevonden. Stel eerst productieTijd, inpakTijd en batchOutput in bij Beheer.</div>';
+  }
+  html += '</div>';
+
+  // Confirm button
+  html += '<button class="inplan-confirm" onclick="confirmInplan()">Inplannen</button>';
+  html += '</div>';
+
+  overlay.innerHTML = html;
+}
+
+function confirmInplan() {
+  if (!inplanCode) return;
+  var p = wpGetProduct(inplanCode);
+  var dept = p ? gC(p) : 'Overig';
+  var psCfg = gPs(inplanCode);
+
+  // Calculate derived values
+  var entry = {
+    batches: inplanBatches,
+    productieTijd: Math.round((inplanBatches * (psCfg.pt || 0)) * 10) / 10,
+    inpakTijd: Math.round((inplanBatches * (psCfg.it || 0)) * 10) / 10,
+    output: Math.round(inplanBatches * (psCfg.bo || 0))
+  };
+
+  // Save to wpData (new structure: {dept: {dag: {code: entry}}})
+  if (wpWeek !== inplanWeek || wpYear !== inplanYear) {
+    wpFbStopListen();
+    wpWeek = inplanWeek;
+    wpYear = inplanYear;
+    wpLoadLocal();
+  }
+
+  if (!wpData[dept]) wpData[dept] = {};
+  if (!wpData[dept][inplanDag]) wpData[dept][inplanDag] = {};
+  wpData[dept][inplanDag][inplanCode] = entry;
+  wpSave();
+  wpFbListen();
+
+  closeInplanPopup();
+
+  // Show toast
+  if (typeof showToast === 'function') showToast(p ? p.name : inplanCode + ' ingepland op ' + WP_DAG_NAMEN[inplanDag]);
+
+  // If on weekplanning view, re-render
+  if (cV === 'w') renderWeekplanning();
+}
+
+// ============================================================
+// WEEKPLANNING — Productieplanning per afdeling (v4)
+// ============================================================
+var WP_DAGEN = ['ma','di','wo','do','vr'];
+var WP_DAG_NAMEN = {ma:'Maandag',di:'Dinsdag',wo:'Woensdag',do:'Donderdag',vr:'Vrijdag'};
+var wpWeek = 0;        // Current weekplanning week number
+var wpYear = 2026;     // Current weekplanning year
+var wpData = {};       // NEW: {dept: {dag: {code: {batches, productieTijd, inpakTijd, output}}}}
+var wpExpanded = {};   // Which days are expanded in UI
+var wpSearchTerm = ''; // Search term for add-product panel
+var wpActiveAdd = null; // Which day has add panel open
+var wpDayMode = false;  // false = week view, true = dag view
+var wpSelectedDay = null; // 'ma','di',etc. — null = auto (vandaag)
+
+/** Get ISO week dates for weekplanning */
+function wpGetDates(week, year) {
+  var jan4 = new Date(year, 0, 4);
+  var dow = jan4.getDay() || 7;
+  var mon = new Date(jan4);
+  mon.setDate(jan4.getDate() - dow + 1 + (week - 1) * 7);
+  var dates = {};
+  WP_DAGEN.forEach(function(d, i) {
+    var dt = new Date(mon);
+    dt.setDate(mon.getDate() + i);
+    dates[d] = (dt.getDate() < 10 ? '0' : '') + dt.getDate() + '-' + ((dt.getMonth()+1) < 10 ? '0' : '') + (dt.getMonth()+1);
+  });
+  return dates;
+}
+
+/** Initialize empty week data (v4 per-department structure) */
+function wpInitWeek() {
+  wpData = {};
+  // New format: {dept: {dag: {code: {batches,...}}}}
+  // Empty init — departments are created on demand
+}
+
+/** Load weekplanning from localStorage */
+function wpLoadLocal() {
+  try {
+    var key = 'wp_' + wpYear + '_' + wpWeek;
+    var v = localStorage.getItem(key);
+    if (v) { wpData = JSON.parse(v); return; }
+  } catch(e) {}
+  wpInitWeek();
+}
+
+/** Save weekplanning to localStorage + Firebase */
+function wpSave() {
+  try {
+    var key = 'wp_' + wpYear + '_' + wpWeek;
+    localStorage.setItem(key, JSON.stringify(wpData));
+  } catch(e) {}
+  if (fbDb && fbConnected) {
+    try {
+      fbDb.ref('productieplan/' + wpYear + '_' + wpWeek).set(wpData);
+      fbDb.ref('productieplan/lastModified').set(new Date().toISOString());
+    } catch(e) {}
+  }
+}
+
+/** Firebase listener for weekplanning (v4 per-department) */
+var _wpFbCallback = null;
+function wpFbListen() {
+  if (!fbDb) return;
+  var path = 'productieplan/' + wpYear + '_' + wpWeek;
+  _wpFbCallback = function(snap) {
+    var val = snap.val();
+    if (val) {
+      wpData = val;
+      if (cV === 'w') renderWeekplanning();
+    }
+  };
+  fbDb.ref(path).on('value', _wpFbCallback);
+}
+
+/** Stop listening for current week (only wp listener, not inpak) */
+function wpFbStopListen() {
+  if (!fbDb) return;
+  if (_wpFbCallback) {
+    fbDb.ref('productieplan/' + wpYear + '_' + wpWeek).off('value', _wpFbCallback);
+    _wpFbCallback = null;
+  }
+}
+
+/** Navigate weekplanning weeks */
+function wpPrev() {
+  wpFbStopListen();
+  wpWeek--;
+  if (wpWeek < 1) { wpWeek = 52; wpYear--; }
+  wpLoadLocal();
+  wpFbListen();
+  renderWeekplanning();
+}
+function wpNext() {
+  wpFbStopListen();
+  wpWeek++;
+  if (wpWeek > 52) { wpWeek = 1; wpYear++; }
+  wpLoadLocal();
+  wpFbListen();
+  renderWeekplanning();
+}
+
+/** Copy week to another week */
+function wpCopyWeek() {
+  if (typeof document === 'undefined') return;
+  var target = prompt('Kopieer week ' + wpWeek + ' naar welk weeknummer?');
+  if (!target) return;
+  var tw = parseInt(target);
+  if (isNaN(tw) || tw < 1 || tw > 52) { alert('Ongeldig weeknummer'); return; }
+  try {
+    var key = 'wp_' + wpYear + '_' + tw;
+    localStorage.setItem(key, JSON.stringify(wpData));
+  } catch(e) {}
+  if (fbDb && fbConnected) {
+    try { fbDb.ref('productieplan/' + wpYear + '_' + tw).set(wpData); } catch(e) {}
+  }
+  alert('Week ' + wpWeek + ' gekopieerd naar week ' + tw);
+}
+
+/** Add product to a day (v4: per-department with batches) */
+function wpAddProduct(dag, code, batches) {
+  var p = wpGetProduct(code);
+  var dept = p ? gC(p) : 'Overig';
+  var b = batches || 1;
+  var psCfg = gPs(code);
+  var entry = {
+    batches: b,
+    productieTijd: Math.round(b * (psCfg.pt || 0) * 10) / 10,
+    inpakTijd: Math.round(b * (psCfg.it || 0) * 10) / 10,
+    output: Math.round(b * (psCfg.bo || 0)),
+    dagdeel: 'ochtend'
+  };
+  if (!wpData[dept]) wpData[dept] = {};
+  if (!wpData[dept][dag]) wpData[dept][dag] = {};
+  wpData[dept][dag][code] = entry;
+  wpSave();
+  renderWeekplanning();
+}
+
+/** Remove product from a day (v4) */
+function wpRemoveProduct(dag, code, dept) {
+  if (!dept) {
+    // Find which department has this product
+    var p = wpGetProduct(code);
+    dept = p ? gC(p) : 'Overig';
+  }
+  if (wpData[dept] && wpData[dept][dag]) {
+    delete wpData[dept][dag][code];
+    wpSave();
+    renderWeekplanning();
+  }
+}
+
+/** Update batches for product on a day (v4) */
+function wpUpdateBatches(dag, code, dept, val) {
+  var b = parseFloat(val);
+  if (isNaN(b) || b < 0) b = 0;
+  var psCfg = gPs(code);
+  var existingDagdeel = (wpData[dept] && wpData[dept][dag] && wpData[dept][dag][code] && wpData[dept][dag][code].dagdeel) || 'ochtend';
+  var existingStatus = (wpData[dept] && wpData[dept][dag] && wpData[dept][dag][code] && wpData[dept][dag][code].status) || 'planned';
+  var entry = {
+    batches: b,
+    productieTijd: Math.round(b * (psCfg.pt || 0) * 10) / 10,
+    inpakTijd: Math.round(b * (psCfg.it || 0) * 10) / 10,
+    output: Math.round(b * (psCfg.bo || 0)),
+    dagdeel: existingDagdeel,
+    status: existingStatus
+  };
+  if (!wpData[dept]) wpData[dept] = {};
+  if (!wpData[dept][dag]) wpData[dept][dag] = {};
+  wpData[dept][dag][code] = entry;
+  wpSave();
+  wpUpdateDayCapacity(dag, dept);
+}
+
+/** Get product info by code */
+function wpGetProduct(code) {
+  for (var i = 0; i < P.length; i++) {
+    if (P[i].code === code) return P[i];
+  }
+  // Check custom products
+  for (var j = 0; j < cp.length; j++) {
+    if (cp[j].code === code) return cp[j];
+  }
+  return null;
+}
+
+/** Calculate production hours for a department on a day (v4) */
+function wpCalcDeptDay(dept, dag) {
+  var cfg = gDeptCfg(dept);
+  var beschikbaar = (cfg.beschikbaar && cfg.beschikbaar[dag]) || 8;
+  var totalBeschikbaar = (typeof beschikbaar === 'object') ? ((beschikbaar.ochtend || 0) + (beschikbaar.middag || 0)) : beschikbaar;
+  var eff = cfg.efficiency || 0.85;
+  var effectief = Math.round(totalBeschikbaar * eff * 10) / 10;
+
+  // Get dagdeel breakdown
+  var dd = getDagdeelUren(dept, dag);
+  var ddOchEff = Math.round(dd.ochtend * eff * 10) / 10;
+  var ddMidEff = Math.round(dd.middag * eff * 10) / 10;
+
+  // Sum overhead for this department on this day
+  var oh = 0;
+  var overhead = (cfg.overhead && cfg.overhead[dag]) || {};
+  for (var k in overhead) oh += (parseFloat(overhead[k]) || 0);
+  oh = Math.round(oh * 10) / 10;
+
+  // Sum production hours split by dagdeel
+  var prodH = 0;
+  var inpakH = 0;
+  var ochtendProdH = 0;
+  var middagProdH = 0;
+  var dayProducts = (wpData[dept] && wpData[dept][dag]) || {};
+  for (var code in dayProducts) {
+    var entry = dayProducts[code];
+    if (entry && entry.productieTijd) {
+      prodH += entry.productieTijd;
+      if ((entry.dagdeel || 'ochtend') === 'ochtend') ochtendProdH += entry.productieTijd;
+      else middagProdH += entry.productieTijd;
+    }
+    if (entry && entry.inpakTijd) inpakH += entry.inpakTijd;
+  }
+  prodH = Math.round(prodH * 10) / 10;
+  inpakH = Math.round(inpakH * 10) / 10;
+  ochtendProdH = Math.round(ochtendProdH * 10) / 10;
+  middagProdH = Math.round(middagProdH * 10) / 10;
+
+  var hasProducts = prodH > 0 || inpakH > 0;
+  var planned = hasProducts ? Math.round((prodH + oh) * 10) / 10 : 0;
+  var delta = Math.round((effectief - planned) * 10) / 10;
+  var status = delta >= -0.5 ? 'green' : delta >= -2 ? 'orange' : 'red';
+
+  return {
+    prodH: prodH, inpakH: inpakH, overhead: oh, planned: planned,
+    beschikbaar: totalBeschikbaar, effectief: effectief, delta: delta,
+    status: status, hasProducts: hasProducts,
+    ochtend: { prodH: ochtendProdH, effectief: ddOchEff },
+    middag: { prodH: middagProdH, effectief: ddMidEff }
+  };
+}
+
+/** Calculate total inpak hours across ALL departments for a day */
+/** Calculate inpak hours for a given day, accounting for lead time.
+ *  Production on day X with lead time N contributes inpak hours to day X+N. */
+function wpCalcInpakDay(dag) {
+  var totalHours = 0;
+  var targetIdx = WP_DAGEN.indexOf(dag);
+  for (var dept in wpData) {
+    if (DP.indexOf(dept) === -1) continue;
+    // Check all production days that could contribute to this inpak day
+    for (var di = 0; di < WP_DAGEN.length; di++) {
+      var prodDag = WP_DAGEN[di];
+      var dayProducts = (wpData[dept] && wpData[dept][prodDag]) || {};
+      for (var code in dayProducts) {
+        var entry = dayProducts[code];
+        if (!entry || !entry.inpakTijd) continue;
+        var lt = (gPs(code).lt || 0);
+        // This production contributes to inpak on prodDay + leadTime
+        if (di + lt === targetIdx) {
+          totalHours += entry.inpakTijd;
+        }
+      }
+    }
+  }
+  return Math.round(totalHours * 10) / 10;
+}
+
+/** Get all products for a day across departments (or for one department) */
+function wpGetDayProducts(dag, deptFilter) {
+  var result = [];
+  var depts = deptFilter ? [deptFilter] : DP;
+  depts.forEach(function(dept) {
+    var dayProducts = (wpData[dept] && wpData[dept][dag]) || {};
+    for (var code in dayProducts) {
+      var entry = dayProducts[code];
+      var p = wpGetProduct(code);
+      result.push({
+        code: code,
+        name: p ? p.name : code,
+        dept: dept,
+        batches: entry.batches || 0,
+        productieTijd: entry.productieTijd || 0,
+        inpakTijd: entry.inpakTijd || 0,
+        output: entry.output || 0,
+        status: entry.status || 'planned',
+        dagdeel: entry.dagdeel || 'ochtend'
+      });
+    }
+  });
+  return result;
+}
+
+/** Partial DOM update: capacity bar for one day */
+function wpUpdateDayCapacity(dag, dept) {
+  if (typeof document === 'undefined') return;
+  // Full re-render is simplest for now
+  renderWeekplanning();
+}
+
+/** Switch to weekplanning view (v4: per-department) */
+function swW() {
+  cV = 'w';
+  if (wpWeek === 0) {
+    var now = new Date();
+    wpWeek = getISOWeek(now);
+    wpYear = now.getFullYear();
+    var d = new Date(now);
+    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+    wpYear = d.getFullYear();
+    wpLoadLocal();
+    wpFbListen();
+  }
+  _switchView('w', '.tab.t-wp', 'weekplan', 'weekplan');
+  renderWeekplanning();
+}
+
+/** Toggle between department and all-departments view */
+function wpToggleAll() {
+  wpShowAll = !wpShowAll;
+  renderWeekplanning();
+}
+
+/** Main render function for weekplanning (v4: per-department) */
+function renderWeekplanning() {
+  if (typeof document === 'undefined') return;
+  // View switching is handled by swW() via _switchView() — no duplication here
+  // Ensure weekplanView is visible (safety net for re-renders triggered by dept buttons)
+  var _wv = document.getElementById('weekplanView');
+  if (_wv) { _wv.style.display = 'block'; _wv.classList.add('active'); }
+  var dates = wpGetDates(wpWeek, wpYear);
+  var activeDept = wpShowAll ? null : cD; // null = all departments
+
+  // Header
+  var html = '<div class="wp-header">';
+  html += '<button class="wp-nav" onclick="wpPrev()">&#9664;</button>';
+  html += '<span class="wp-title">Week ' + wpWeek + ' &mdash; ' + wpYear + '</span>';
+  html += '<button class="wp-nav" onclick="wpNext()">&#9654;</button>';
+  html += '<button class="wp-copy" onclick="wpCopyWeek()" title="Kopieer week">&#128203;</button>';
+  html += '</div>';
+
+  // Department selector
+  html += '<div class="wp-dept-bar">';
+  html += '<button class="wp-dept-btn' + (wpShowAll ? ' wp-dept-sel' : '') + '" onclick="wpShowAll=true;renderWeekplanning()">Totaal</button>';
+  DP.forEach(function(d) {
+    var sel = (!wpShowAll && cD === d) ? ' wp-dept-sel' : '';
+    html += '<button class="wp-dept-btn' + sel + '" onclick="wpShowAll=false;cD=\'' + d + '\';renderWeekplanning()">' + d.replace('Banket Warm','B.Warm').replace('Banket Koud','B.Koud').replace('Chocolaterie','Choco') + '</button>';
+  });
+  html += '</div>';
+
+  // Mode bar: Week | Dag toggle + Print
+  html += '<div class="wp-mode-bar">';
+  html += '<button class="wp-mode-btn' + (!wpDayMode ? ' wp-mode-sel' : '') + '" onclick="wpDayMode=false;renderWeekplanning()">Week</button>';
+  html += '<button class="wp-mode-btn' + (wpDayMode ? ' wp-mode-sel' : '') + '" onclick="wpDayMode=true;wpSelectedDay=null;renderWeekplanning()">Dag</button>';
+  html += '<button class="wp-print-btn" onclick="window.print()" title="Print weergave">&#128424; Print</button>';
+  html += '</div>';
+
+  // Week summary for active department(s)
+  var weekProd = 0, weekEff = 0;
+  var deptsToShow = wpShowAll ? DP : [cD];
+  deptsToShow.forEach(function(dept) {
+    WP_DAGEN.forEach(function(d) {
+      var c = wpCalcDeptDay(dept, d);
+      weekProd += c.planned;
+      weekEff += c.effectief;
+    });
+  });
+  weekProd = Math.round(weekProd * 10) / 10;
+  weekEff = Math.round(weekEff * 10) / 10;
+  var weekDelta = Math.round((weekEff - weekProd) * 10) / 10;
+  var wStatus = weekDelta >= -0.5 ? 'green' : weekDelta >= -2 ? 'orange' : 'red';
+  html += '<div class="wp-summary">Productie ' + weekProd + 'h &middot; Beschikbaar ' + weekEff + 'h &middot; <span class="wp-cap-' + wStatus + '">' + (weekDelta >= 0 ? '+' : '') + weekDelta + 'h</span></div>';
+
+  // Capacity overview table (Totaal mode only)
+  if (wpShowAll) {
+    html += '<div class="wp-overview"><table class="wp-ov-tbl">';
+    html += '<tr><th></th>';
+    WP_DAGEN.forEach(function(d) { html += '<th>' + WP_DAG_NAMEN[d].substring(0,2) + '</th>'; });
+    html += '<th>Totaal</th></tr>';
+    DP.forEach(function(dept) {
+      html += '<tr><td class="wp-ov-dept">' + dept.replace('Banket Warm','B.Warm').replace('Banket Koud','B.Koud').replace('Chocolaterie','Choco') + '</td>';
+      var deptWeekTotal = 0;
+      WP_DAGEN.forEach(function(d) {
+        var c = wpCalcDeptDay(dept, d);
+        deptWeekTotal += c.planned;
+        var pct = c.effectief > 0 ? c.planned / c.effectief : 0;
+        var color = pct < 0.7 ? 'var(--green)' : pct < 0.95 ? 'var(--orange)' : 'var(--red)';
+        html += '<td class="wp-ov-cell" style="color:' + color + '">' + Math.round(c.planned * 10) / 10 + '/' + Math.round(c.effectief * 10) / 10 + 'h</td>';
+      });
+      html += '<td class="wp-ov-total">' + Math.round(deptWeekTotal * 10) / 10 + 'h</td></tr>';
+    });
+    html += '</table></div>';
+  }
+
+  // Today detection
+  var _today = new Date();
+  var _todayDow = (_today.getDay() + 6) % 7; // 0=ma, 1=di, ..., 4=vr
+  var _todayDag = _todayDow < 5 ? WP_DAGEN[_todayDow] : null;
+  var _isCurrentWeek = (wpWeek === getISOWeek(_today) && wpYear === _today.getFullYear());
+
+  if (wpDayMode) {
+    // --- DAG MODUS ---
+    if (!wpSelectedDay) {
+      wpSelectedDay = _todayDag || 'ma';
+    }
+    // Day navigation
+    html += '<div class="wp-day-nav">';
+    html += '<button class="wp-nav" onclick="wpDayPrev()">&#9664;</button>';
+    html += '<span class="wp-day-title">' + WP_DAG_NAMEN[wpSelectedDay] + ' ' + dates[wpSelectedDay] + '</span>';
+    html += '<button class="wp-nav" onclick="wpDayNext()">&#9654;</button>';
+    html += '</div>';
+    // Get products for selected day
+    var _dayProds = wpGetDayProducts(wpSelectedDay, wpShowAll ? null : cD);
+    _dayProds.sort(function(a, b) { return a.name.localeCompare(b.name); });
+    // Capacity summary for this day
+    var _dayCap = {planned:0, effectief:0};
+    deptsToShow.forEach(function(dept) { var c = wpCalcDeptDay(dept, wpSelectedDay); _dayCap.planned += c.planned; _dayCap.effectief += c.effectief; });
+    _dayCap.delta = Math.round((_dayCap.effectief - _dayCap.planned) * 10) / 10;
+    var _dayStatus = _dayCap.delta >= -0.5 ? 'green' : _dayCap.delta >= -2 ? 'orange' : 'red';
+    var _doneC = _dayProds.filter(function(x) { return x.status === 'done'; }).length;
+    html += '<div class="wp-day-summary">Gepland ' + Math.round(_dayCap.planned * 10) / 10 + 'h / ' + Math.round(_dayCap.effectief * 10) / 10 + 'h &middot; <span class="wp-cap-' + _dayStatus + '">' + (_dayCap.delta >= 0 ? '+' : '') + _dayCap.delta + 'h</span>';
+    if (_dayProds.length > 0) html += ' &middot; ' + _doneC + '/' + _dayProds.length + ' gereed';
+    html += '</div>';
+    // Product list - group by dagdeel
+    var _ochProds = _dayProds.filter(function(x) { return (x.dagdeel || 'ochtend') === 'ochtend'; });
+    var _midProds = _dayProds.filter(function(x) { return (x.dagdeel || 'ochtend') === 'middag'; });
+
+    html += '<div class="wp-daylist">';
+
+    if (_dayProds.length === 0) {
+      html += '<div class="wp-empty">Geen producten gepland voor ' + WP_DAG_NAMEN[wpSelectedDay] + '</div>';
+    } else {
+      // Ochtend section
+      if (_ochProds.length > 0) {
+        html += '<div class="wp-dl-section"><span class="wp-dl-section-icon">☀</span> Ochtend</div>';
+        _ochProds.forEach(function(item) {
+          var _st = item.status || 'planned';
+          var _stIcon = _st === 'done' ? '&#9989;' : _st === 'busy' ? '&#9203;' : '&#9744;';
+          var _stClass = _st !== 'planned' ? ' wp-daylist-' + _st : '';
+          html += '<div class="wp-daylist-row' + _stClass + '">';
+          html += '<span class="wp-daylist-check" onclick="wpToggleStatus(\'' + wpSelectedDay + '\',\'' + item.code + '\',\'' + item.dept + '\')">' + _stIcon + '</span>';
+          html += '<span class="wp-daylist-name">' + item.name + '</span>';
+          var _dlNoSet = (item.productieTijd === 0 && item.inpakTijd === 0 && item.output === 0);
+          if (_dlNoSet) {
+            html += '<span class="wp-daylist-info wp-prod-warn">' + item.batches + ' batch &middot; <em>geen instellingen</em></span>';
+            html += '<span class="wp-daylist-time" style="color:var(--warning)">&#9881; stel in</span>';
+          } else {
+            html += '<span class="wp-daylist-info">' + item.batches + ' batch &rarr; ' + item.output + ' stuks</span>';
+            html += '<span class="wp-daylist-time">Prod: ' + item.productieTijd + 'h</span>';
+          }
+          html += '</div>';
+        });
+      }
+
+      // Middag section
+      if (_midProds.length > 0) {
+        html += '<div class="wp-dl-section"><span class="wp-dl-section-icon">☽</span> Middag</div>';
+        _midProds.forEach(function(item) {
+          var _st = item.status || 'planned';
+          var _stIcon = _st === 'done' ? '&#9989;' : _st === 'busy' ? '&#9203;' : '&#9744;';
+          var _stClass = _st !== 'planned' ? ' wp-daylist-' + _st : '';
+          html += '<div class="wp-daylist-row' + _stClass + '">';
+          html += '<span class="wp-daylist-check" onclick="wpToggleStatus(\'' + wpSelectedDay + '\',\'' + item.code + '\',\'' + item.dept + '\')">' + _stIcon + '</span>';
+          html += '<span class="wp-daylist-name">' + item.name + '</span>';
+          var _dlNoSet = (item.productieTijd === 0 && item.inpakTijd === 0 && item.output === 0);
+          if (_dlNoSet) {
+            html += '<span class="wp-daylist-info wp-prod-warn">' + item.batches + ' batch &middot; <em>geen instellingen</em></span>';
+            html += '<span class="wp-daylist-time" style="color:var(--warning)">&#9881; stel in</span>';
+          } else {
+            html += '<span class="wp-daylist-info">' + item.batches + ' batch &rarr; ' + item.output + ' stuks</span>';
+            html += '<span class="wp-daylist-time">Prod: ' + item.productieTijd + 'h</span>';
+          }
+          html += '</div>';
+        });
+      }
+    }
+    html += '</div>';
+  } else {
+
+  // --- WEEK MODUS ---
+  // Day cards
+  html += '<div class="wp-grid">';
+  WP_DAGEN.forEach(function(dag) {
+    var expanded = wpExpanded[dag] !== false;
+    var dayProducts = wpGetDayProducts(dag, wpShowAll ? null : cD);
+    dayProducts.sort(function(a, b) { return a.name.localeCompare(b.name); });
+    var prodCount = dayProducts.length;
+
+    // Calculate capacity per department for this day
+    var dayCap = {prodH:0, overhead:0, planned:0, effectief:0, delta:0};
+    deptsToShow.forEach(function(dept) {
+      var c = wpCalcDeptDay(dept, dag);
+      dayCap.prodH += c.prodH;
+      dayCap.overhead += c.overhead;
+      dayCap.planned += c.planned;
+      dayCap.effectief += c.effectief;
+    });
+    dayCap.delta = Math.round((dayCap.effectief - dayCap.planned) * 10) / 10;
+    var dayStatus = dayCap.delta >= -0.5 ? 'green' : dayCap.delta >= -2 ? 'orange' : 'red';
+    var statusIcon = dayStatus === 'green' ? '&#9989;' : dayStatus === 'orange' ? '&#128992;' : '&#128308;';
+
+    var _isToday = (_isCurrentWeek && dag === _todayDag);
+    html += '<div class="wp-day' + (expanded ? ' wp-day-exp' : '') + (_isToday ? ' wp-day-today' : '') + '">';
+
+    // --- Day header ---
+    html += '<div class="wp-day-header" onclick="wpToggleDay(\'' + dag + '\')">';
+    html += '<div class="wp-day-left">';
+    html += '<span class="wp-day-name">' + WP_DAG_NAMEN[dag] + '</span>';
+    html += '<span class="wp-day-date">' + dates[dag] + '</span>';
+    html += '</div>';
+    var _doneCount = dayProducts.filter(function(x) { return x.status === 'done'; }).length;
+    html += '<div class="wp-day-right">';
+    if (prodCount > 0) {
+      html += '<span class="wp-day-count">' + prodCount + '</span>';
+      if (_doneCount > 0) html += '<span class="wp-day-progress">' + _doneCount + '/' + prodCount + '</span>';
+    }
+    html += '<span class="wp-day-status">' + statusIcon + '</span>';
+    html += '<span class="wp-arrow">' + (expanded ? '&#9650;' : '&#9660;') + '</span>';
+    html += '</div>';
+    html += '</div>';
+
+    // --- Capacity bar (always visible, below header) ---
+    var pct = dayCap.effectief > 0 ? Math.min(Math.round((dayCap.planned / dayCap.effectief) * 100), 150) : 0;
+    html += '<div class="wp-cap-bar">';
+    html += '<div class="dc-bar-fill dc-bar-' + dayStatus + '" style="width:' + Math.min(pct, 100) + '%"></div>';
+    html += '<span class="dc-bar-text">' + dayCap.planned + 'h / ' + dayCap.effectief + 'h</span>';
+    html += '</div>';
+
+    if (expanded) {
+      html += '<div class="wp-day-body">';
+
+      if (wpShowAll) {
+        // Group by department
+        DP.forEach(function(dept) {
+          var deptProds = dayProducts.filter(function(x) { return x.dept === dept; });
+          if (deptProds.length === 0) return;
+          var deptCap = wpCalcDeptDay(dept, dag);
+          var deptStatus = deptCap.delta >= -0.5 ? 'green' : deptCap.delta >= -2 ? 'orange' : 'red';
+          html += '<div class="wp-cat-label" style="border-left:3px solid var(--' + (dept === 'Brood' ? 'brood' : dept === 'Banket Warm' ? 'warm' : dept === 'Banket Koud' ? 'koud' : dept === 'Chocolaterie' ? 'choco' : 'text-dim') + ')">';
+          html += dept + ' <span class="wp-dept-cap wp-cap-' + deptStatus + '">' + deptCap.prodH + 'h / ' + deptCap.effectief + 'h</span>';
+          html += '</div>';
+          deptProds.forEach(function(item) {
+            html += wpRenderProductRow(dag, item);
+          });
+        });
+      } else {
+        // Single department view - group by dagdeel
+        var ochtendProducts = dayProducts.filter(function(x) { return (x.dagdeel || 'ochtend') === 'ochtend'; });
+        var middagProducts = dayProducts.filter(function(x) { return (x.dagdeel || 'ochtend') === 'middag'; });
+
+        // Get capacity info for single department
+        var singleDeptCap = wpCalcDeptDay(cD, dag);
+        var ddUren = getDagdeelUren(cD, dag);
+
+        // Ochtend section
+        html += '<div class="wp-dd wp-dd-ochtend">';
+        html += '<div class="wp-dd-header"><span class="wp-dd-icon">☀</span><span class="wp-dd-label">Ochtend</span><span class="wp-dd-cap">' + singleDeptCap.ochtend.prodH + 'h / ' + singleDeptCap.ochtend.effectief + 'h</span></div>';
+        ochtendProducts.forEach(function(item) { html += wpRenderProductRow(dag, item); });
+        if (ochtendProducts.length === 0) html += '<div class="wp-dd-empty">—</div>';
+        html += '</div>';
+
+        // Middag section
+        html += '<div class="wp-dd wp-dd-middag">';
+        html += '<div class="wp-dd-header"><span class="wp-dd-icon">☽</span><span class="wp-dd-label">Middag</span><span class="wp-dd-cap">' + singleDeptCap.middag.prodH + 'h / ' + singleDeptCap.middag.effectief + 'h</span></div>';
+        middagProducts.forEach(function(item) { html += wpRenderProductRow(dag, item); });
+        if (middagProducts.length === 0) html += '<div class="wp-dd-empty">—</div>';
+        html += '</div>';
+      }
+
+      if (prodCount === 0) {
+        html += '<div class="wp-empty">Geen producten gepland</div>';
+      }
+
+      // Add product button (only in single-department view)
+      if (!wpShowAll) {
+        html += '<div class="wp-add-area">';
+        if (wpActiveAdd === dag) {
+          html += '<input type="text" class="wp-add-search" id="wpSearch_' + dag + '" placeholder="Zoek product..." oninput="wpFilterAdd(\'' + dag + '\',this.value)" autofocus>';
+          html += '<div class="wp-add-list" id="wpAddList_' + dag + '"></div>';
+          html += '<button class="wp-add-cancel" onclick="wpCloseAdd()">Sluiten</button>';
+        } else {
+          html += '<button class="wp-add-btn" onclick="wpOpenAdd(\'' + dag + '\')">+ Product toevoegen</button>';
+        }
+        html += '</div>';
+      }
+
+      html += '</div>'; // wp-day-body
+    }
+    html += '</div>'; // wp-day
+  });
+  html += '</div>'; // wp-grid
+
+  // Bezetting quick-edit (only in single-department view)
+  if (!wpShowAll) {
+    var _bCfg = gDeptCfg(cD);
+    html += '<div class="wp-bezetting-bar">';
+    html += '<span class="wp-bez-label">Bezetting ' + cD + ':</span>';
+    WP_DAGEN.forEach(function(d) {
+      var dd = getDagdeelUren(cD, d);
+      html += '<div class="wp-bez-cell">';
+      html += '<span class="wp-bez-day">' + WP_DAG_NAMEN[d].substring(0,2) + '</span>';
+      html += '<div class="wp-bez-split">';
+      html += '<input class="wp-bez-inp wp-bez-och" value="' + dd.ochtend + '" title="Ochtend" onchange="setDeptDagdeel(\'' + cD + '\',\'' + d + '\',\'ochtend\',this.value);renderWeekplanning()">';
+      html += '<input class="wp-bez-inp wp-bez-mid" value="' + dd.middag + '" title="Middag" onchange="setDeptDagdeel(\'' + cD + '\',\'' + d + '\',\'middag\',this.value);renderWeekplanning()">';
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '<span class="wp-bez-eff">Eff: ' + Math.round((_bCfg.efficiency || 0.85) * 100) + '%</span>';
+    html += '</div>';
+  }
+
+  // Department settings (collapsed, only in single-department view)
+  if (!wpShowAll) {
+    html += wpRenderDeptSettings(cD);
+  }
+
+  } // end if/else wpDayMode
+
+  var wv = document.getElementById('weekplanView');
+  if (wv) wv.innerHTML = html;
+
+  if (wpActiveAdd) {
+    wpFilterAdd(wpActiveAdd, '');
+    var searchEl = document.getElementById('wpSearch_' + wpActiveAdd);
+    if (searchEl) setTimeout(function() { searchEl.focus(); }, 50);
+  }
+}
+
+/** Render a single product row in weekplanning */
+function wpRenderProductRow(dag, item) {
+  var st = item.status || 'planned';
+  var stIcon = st === 'done' ? '&#9989;' : st === 'busy' ? '&#9203;' : '&#9744;';
+  var stClass = st !== 'planned' ? ' wp-prod-' + st : '';
+  var psCfg = gPs(item.code);
+  var _noSettings = (!psCfg.pt && !psCfg.it && !psCfg.bo);
+
+  var h = '<div class="wp-prod-row' + stClass + '">';
+
+  // Row 1: status, name, batches, actions
+  h += '<div class="wp-prod-main">';
+  h += '<span class="wp-prod-status" onclick="wpToggleStatus(\'' + dag + '\',\'' + item.code + '\',\'' + item.dept + '\')" title="Status wijzigen">' + stIcon + '</span>';
+  h += '<span class="wp-prod-name">' + item.name + '</span>';
+  if (!_noSettings) {
+    h += '<span class="wp-prod-info">' + item.output + 'st &middot; ' + item.productieTijd + 'h</span>';
+  }
+  h += '<input type="number" class="wp-inp" value="' + item.batches + '" min="0" step="0.5" onchange="wpUpdateBatches(\'' + dag + '\',\'' + item.code + '\',\'' + item.dept + '\',this.value)" onfocus="this.select()" title="Batches">';
+  var ddIcon = (item.dagdeel === 'middag') ? '☽' : '☀';
+  h += '<button class="wp-dd-toggle" onclick="event.stopPropagation();wpToggleDagdeel(\'' + dag + '\',\'' + item.code + '\',\'' + item.dept + '\')" title="Verplaats naar ' + ((item.dagdeel === 'middag') ? 'ochtend' : 'middag') + '">' + ddIcon + '</button>';
+  h += '<select class="wp-move" onchange="wpMoveProduct(\'' + dag + '\',\'' + item.code + '\',\'' + item.dept + '\',this.value);this.value=\'\'" title="Verplaats">';
+  h += '<option value="">&#8644;</option>';
+  WP_DAGEN.forEach(function(d) { if (d !== dag) h += '<option value="' + d + '">' + WP_DAG_NAMEN[d].substring(0,2) + '</option>'; });
+  h += '</select>';
+  h += '<button class="wp-rm" onclick="wpRemoveProduct(\'' + dag + '\',\'' + item.code + '\',\'' + item.dept + '\')" title="Verwijder">&times;</button>';
+  h += '</div>';
+
+  // Row 2: inline settings (editable) — shown when no settings OR when expanded
+  if (_noSettings) {
+    h += '<div class="wp-prod-settings wp-prod-warn-row">';
+    h += '<span class="wp-prod-warn-txt">&#9888; Geen productie-instellingen</span>';
+    h += '<label>Prod <input class="wp-set-inp" value="" placeholder="uur" onchange="sPs(\'' + item.code + '\',\'pt\',this.value);wpRecalcEntry(\'' + dag + '\',\'' + item.code + '\',\'' + item.dept + '\')"></label>';
+    h += '<label>Batch <input class="wp-set-inp" value="" placeholder="st" onchange="sPs(\'' + item.code + '\',\'bo\',this.value);wpRecalcEntry(\'' + dag + '\',\'' + item.code + '\',\'' + item.dept + '\')"></label>';
+    h += '<label>Inpak <input class="wp-set-inp" value="" placeholder="uur" onchange="sPs(\'' + item.code + '\',\'it\',this.value);wpRecalcEntry(\'' + dag + '\',\'' + item.code + '\',\'' + item.dept + '\')"></label>';
+    h += '</div>';
+  }
+
+  h += '</div>';
+  return h;
+}
+
+/** Recalculate weekplan entry after inline settings change */
+function wpRecalcEntry(dag, code, dept) {
+  if (!wpData[dept] || !wpData[dept][dag] || !wpData[dept][dag][code]) return;
+  var entry = wpData[dept][dag][code];
+  var psCfg = gPs(code);
+  var batches = entry.batches || 1;
+  entry.productieTijd = Math.round((psCfg.pt || 0) * batches * 10) / 10;
+  entry.inpakTijd = Math.round((psCfg.it || 0) * batches * 10) / 10;
+  entry.output = Math.round((psCfg.bo || 0) * batches);
+  wpSave();
+  renderWeekplanning();
+}
+
+/** Day mode navigation: previous day */
+function wpDayPrev() {
+  var i = WP_DAGEN.indexOf(wpSelectedDay);
+  wpSelectedDay = WP_DAGEN[Math.max(0, i - 1)];
+  renderWeekplanning();
+}
+
+/** Day mode navigation: next day */
+function wpDayNext() {
+  var i = WP_DAGEN.indexOf(wpSelectedDay);
+  wpSelectedDay = WP_DAGEN[Math.min(WP_DAGEN.length - 1, i + 1)];
+  renderWeekplanning();
+}
+
+/** Toggle product status: planned → busy → done → planned */
+function wpToggleStatus(dag, code, dept) {
+  if (!wpData[dept] || !wpData[dept][dag] || !wpData[dept][dag][code]) return;
+  var entry = wpData[dept][dag][code];
+  var cur = entry.status || 'planned';
+  entry.status = cur === 'planned' ? 'busy' : cur === 'busy' ? 'done' : 'planned';
+  wpSave();
+  renderWeekplanning();
+}
+
+/** Move product from one day to another */
+function wpMoveProduct(fromDag, code, dept, toDag) {
+  if (!toDag || toDag === fromDag) return;
+  var entry = wpData[dept] && wpData[dept][fromDag] && wpData[dept][fromDag][code];
+  if (!entry) return;
+  if (!wpData[dept][toDag]) wpData[dept][toDag] = {};
+  wpData[dept][toDag][code] = JSON.parse(JSON.stringify(entry));
+  delete wpData[dept][fromDag][code];
+  wpSave();
+  renderWeekplanning();
+  if (typeof showToast === 'function') showToast('Verplaatst naar ' + WP_DAG_NAMEN[toDag]);
+}
+
+/** Toggle product between ochtend and middag */
+function wpToggleDagdeel(dag, code, dept) {
+  if (!wpData[dept] || !wpData[dept][dag] || !wpData[dept][dag][code]) return;
+  var entry = wpData[dept][dag][code];
+  entry.dagdeel = (entry.dagdeel === 'ochtend') ? 'middag' : 'ochtend';
+  wpSave();
+  renderWeekplanning();
+}
+
+/** Render department settings panel */
+function wpRenderDeptSettings(dept) {
+  var cfg = gDeptCfg(dept);
+  var h = '<div class="wp-dept-settings">';
+  h += '<div class="wp-dept-settings-header" onclick="wpToggleDeptSettings()"><span>&#9881; Afdelingsinstellingen: ' + dept + '</span><span id="wpDeptSettChev">&#9660;</span></div>';
+  h += '<div class="wp-dept-settings-body" id="wpDeptSettBody" style="display:none">';
+
+  // Beschikbare uren per dag
+  h += '<div class="set-section"><h4>Beschikbare uren per dag</h4><div class="set-row">';
+  WP_DAGEN.forEach(function(d) {
+    var val = cfg.beschikbaar[d] || 8;
+    h += '<div class="set-cell"><label>' + WP_DAG_NAMEN[d].substring(0,2) + '</label><input class="dc-inp-sm" value="' + val + '" onchange="setDeptBeschikbaar(\'' + dept + '\',\'' + d + '\',this.value);renderWeekplanning()"></div>';
+  });
+  h += '</div></div>';
+
+  // Overhead per dag
+  h += '<div class="set-section"><h4>Overhead per dag (uren)</h4>';
+  WP_DAGEN.forEach(function(d) {
+    var oh = (cfg.overhead && cfg.overhead[d]) || {pauze:0.5,schoonmaak:0.5,overleg:0};
+    h += '<div class="set-oh-row"><span class="set-oh-dag">' + WP_DAG_NAMEN[d].substring(0,2) + '</span>';
+    h += '<label>Pauze</label><input class="dc-inp-sm" value="' + (oh.pauze || 0) + '" onchange="setDeptOverhead(\'' + dept + '\',\'' + d + '\',\'pauze\',this.value);renderWeekplanning()">';
+    h += '<label>Schoonm.</label><input class="dc-inp-sm" value="' + (oh.schoonmaak || 0) + '" onchange="setDeptOverhead(\'' + dept + '\',\'' + d + '\',\'schoonmaak\',this.value);renderWeekplanning()">';
+    h += '<label>Overleg</label><input class="dc-inp-sm" value="' + (oh.overleg || 0) + '" onchange="setDeptOverhead(\'' + dept + '\',\'' + d + '\',\'overleg\',this.value);renderWeekplanning()">';
+    h += '</div>';
+  });
+  h += '</div>';
+
+  // Efficiency
+  h += '<div class="set-section"><h4>Efficiency</h4>';
+  h += '<input class="dc-inp-sm" value="' + Math.round((cfg.efficiency || 0.85) * 100) + '" onchange="setDeptEfficiency(\'' + dept + '\',this.value);renderWeekplanning()"> %';
+  h += '</div>';
+
+  h += '</div></div>';
+  return h;
+}
+
+function wpToggleDeptSettings() {
+  var body = document.getElementById('wpDeptSettBody');
+  var chev = document.getElementById('wpDeptSettChev');
+  if (body) {
+    var vis = body.style.display !== 'none';
+    body.style.display = vis ? 'none' : 'block';
+    if (chev) chev.innerHTML = vis ? '&#9660;' : '&#9650;';
+  }
+}
+
+/** Toggle day expand/collapse */
+function wpToggleDay(dag) {
+  wpExpanded[dag] = wpExpanded[dag] === false ? true : (wpExpanded[dag] ? false : true);
+  renderWeekplanning();
+}
+
+/** Open add-product panel for a day */
+function wpOpenAdd(dag) {
+  wpActiveAdd = dag;
+  wpSearchTerm = '';
+  // Ensure urgency is calculated for all products
+  if (typeof calcAllUrgency === 'function') { try { calcAllUrgency(); } catch(e) {} }
+  renderWeekplanning();
+}
+
+/** Close add-product panel */
+function wpCloseAdd() {
+  wpActiveAdd = null;
+  renderWeekplanning();
+}
+
+/** Filter products for add panel (v4: filters by current department) */
+function wpFilterAdd(dag, term) {
+  if (typeof document === 'undefined') return;
+  var list = document.getElementById('wpAddList_' + dag);
+  if (!list) return;
+  var t = (term || '').toLowerCase();
+  var existing = (wpData[cD] && wpData[cD][dag]) || {};
+  // Get enabled products for current department
+  var matches = P.filter(function(p) {
+    if (!io(p.code)) return false;
+    if (gC(p) !== cD) return false; // Only show products from current department
+    if (existing[p.code] !== undefined) return false;
+    if (!t) return true;
+    return (p.name || '').toLowerCase().indexOf(t) !== -1 || (p.code || '').indexOf(t) !== -1;
+  });
+  matches.sort(function(a, b) {
+    var ua = a._urgency !== undefined ? a._urgency : 999;
+    var ub = b._urgency !== undefined ? b._urgency : 999;
+    if (ua !== ub) return ua - ub;
+    return (a.name || '').localeCompare(b.name || '');
+  });
+  var shown = matches.slice(0, 30);
+  var html = '';
+  if (shown.length === 0) {
+    html = '<div class="wp-add-empty">Geen producten gevonden</div>';
+  }
+  shown.forEach(function(p) {
+    var psCfg = gPs(p.code);
+    var psHint = psCfg.pt > 0 ? ' &middot; ' + psCfg.pt + 'h prod' : '';
+    if (psCfg.it > 0) psHint += ' &middot; ' + psCfg.it + 'h inpak';
+    if (psCfg.bo > 0) psHint += ' &middot; ' + psCfg.bo + 'st/batch';
+    var urgBadge = '';
+    if (p._urgency !== undefined && p._urgency <= 1) {
+      urgBadge = '<span class="urg urg-now">NU</span> ';
+    } else if (p._urgency !== undefined && p._urgency <= 3) {
+      urgBadge = '<span class="urg urg-soon">W+' + p._urgency + '</span> ';
+    }
+    html += '<div class="wp-add-item" onclick="wpAddProduct(\'' + dag + '\',\'' + p.code + '\',1)">';
+    html += urgBadge + '<span class="wp-add-name">' + (p.name || p.code) + '</span>';
+    html += '<span class="wp-add-meta">' + gC(p) + psHint + '</span>';
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+// ============================================================
+// INPAK CAPACITEIT MODULE (geïntegreerd in dashboard)
+// ============================================================
+
+// --- Inpak State ---
+var ipWeek = 0, ipYear = 2026;
+var ipProdPlan = {};       // v4: {dept: {dag: {code: {batches,productieTijd,inpakTijd,output}}}}
+var ipFlatPlan = {};       // Flattened: {dag: {code: {inpakTijd, name, dept, output}}} — derived from ipProdPlan
+var ipProductMap = {};     // {code: {name, inpakUren, batchSize, category, isOrdering}} — legacy, kept for overrides
+var ipOverrides = {};      // {dag: {code: uren}}
+var ipStaffing = {};       // {dag: {beschikbaar: number}}
+var ipOverhead = {};       // {dag: {overleg, schoonmaak, tgt}}
+var ipConfig = {
+  overhead: {overleg:1, schoonmaak:0.5, tgt:0.5},
+  defaultStaffing: {ma:16, di:20, wo:20, do:16, vr:12},
+  efficiency: 0.85,
+  thresholds: {green:-0.5, orange:-2.0}
+};
+var ipTab = 'planning';    // 'planning' | 'settings'
+var ipExpanded = {};
+var IP_DAGEN = ['ma','di','wo','do','vr'];
+var IP_DAG_NAMEN = {ma:'Maandag',di:'Dinsdag',wo:'Woensdag',do:'Donderdag',vr:'Vrijdag'};
+var IP_DEF_OH = {overleg:1, schoonmaak:0.5, tgt:0.5};
+var IP_DEF_STAFF = {ma:16, di:20, wo:20, do:16, vr:12};
+var ipListenersActive = false;
+
+// --- Inpak Local Storage ---
+function ipLs(key, val) {
+  try {
+    if (val === undefined) { var v = localStorage.getItem('inpak_' + key); return v ? JSON.parse(v) : null; }
+    localStorage.setItem('inpak_' + key, JSON.stringify(val));
+  } catch(e) {}
+}
+function ipSaveConfig() { ipLs('config', ipConfig); if (typeof fbDb !== 'undefined' && fbDb) { try { fbDb.ref('inpak/config').set(ipConfig); } catch(e) {} } }
+function ipSaveProductMap() { ipLs('productmap', ipProductMap); if (typeof fbDb !== 'undefined' && fbDb) { try { fbDb.ref('inpak/productmap').set(ipProductMap); } catch(e) {} } }
+function ipSaveOverrides() { var k = ipYear + '_' + ipWeek; ipLs('overrides_' + k, ipOverrides); if (typeof fbDb !== 'undefined' && fbDb) { try { fbDb.ref('inpak/overrides/' + k).set(ipOverrides); } catch(e) {} } }
+function ipSaveStaffing() { var k = ipYear + '_' + ipWeek; ipLs('staffing_' + k, ipStaffing); if (typeof fbDb !== 'undefined' && fbDb) { try { fbDb.ref('inpak/staffing/' + k).set(ipStaffing); } catch(e) {} } }
+function ipSaveOverhead() { var k = ipYear + '_' + ipWeek; ipLs('overhead_' + k, ipOverhead); if (typeof fbDb !== 'undefined' && fbDb) { try { fbDb.ref('inpak/overhead/' + k).set(ipOverhead); } catch(e) {} } }
+
+function ipLoadLocal() {
+  var pm = ipLs('productmap'); if (pm) ipProductMap = pm;
+  var c = ipLs('config');
+  if (c) { ipConfig = c; if (!ipConfig.overhead) ipConfig.overhead = IP_DEF_OH; if (!ipConfig.defaultStaffing) ipConfig.defaultStaffing = IP_DEF_STAFF; if (!ipConfig.efficiency) ipConfig.efficiency = 0.85; if (!ipConfig.thresholds) ipConfig.thresholds = {green:-0.5, orange:-2.0}; }
+  ipLoadWeekLocal();
+}
+function ipLoadWeekLocal() {
+  var k = ipYear + '_' + ipWeek;
+  ipOverrides = ipLs('overrides_' + k) || {};
+  ipStaffing = ipLs('staffing_' + k) || {};
+  ipOverhead = ipLs('overhead_' + k) || {};
+  ipInitDefaults();
+}
+function ipInitDefaults() {
+  var ds = ipConfig.defaultStaffing || IP_DEF_STAFF;
+  var doh = ipConfig.overhead || IP_DEF_OH;
+  IP_DAGEN.forEach(function(d) {
+    if (!ipStaffing[d]) ipStaffing[d] = {beschikbaar: ds[d] || 16};
+    if (!ipOverhead[d]) ipOverhead[d] = JSON.parse(JSON.stringify(doh));
+  });
+}
+
+// --- Inpak Firebase Listeners ---
+function ipStartListeners() {
+  if (!fbDb || ipListenersActive) return;
+  ipListenersActive = true;
+  fbDb.ref('inpak/productmap').on('value', function(snap) { var v = snap.val(); if (v) { ipProductMap = v; ipRenderAll(); } });
+  fbDb.ref('inpak/config').on('value', function(snap) { var v = snap.val(); if (v) { ipConfig = v; if (!ipConfig.overhead) ipConfig.overhead = IP_DEF_OH; if (!ipConfig.defaultStaffing) ipConfig.defaultStaffing = IP_DEF_STAFF; if (!ipConfig.efficiency) ipConfig.efficiency = 0.85; if (!ipConfig.thresholds) ipConfig.thresholds = {green:-0.5, orange:-2.0}; } });
+  ipListenWeek();
+}
+/** Flatten v4 productieplan for inpak: merge all departments into {dag: {code: info}}
+ *  Applies lead time shift: production on day X with lt=N results in inpak on day X+N */
+function ipFlattenPlan() {
+  ipFlatPlan = {};
+  IP_DAGEN.forEach(function(d) { ipFlatPlan[d] = {}; });
+  // ipProdPlan is now {dept: {dag: {code: {batches, productieTijd, inpakTijd, output}}}}
+  for (var dept in ipProdPlan) {
+    if (IP_DAGEN.indexOf(dept) !== -1) continue; // Skip if it's old-format day key
+    var deptData = ipProdPlan[dept];
+    if (!deptData || typeof deptData !== 'object') continue;
+    for (var dag in deptData) {
+      if (IP_DAGEN.indexOf(dag) === -1) continue;
+      var dayProducts = deptData[dag];
+      for (var code in dayProducts) {
+        var entry = dayProducts[code];
+        var p = null;
+        for (var pi = 0; pi < P.length; pi++) { if (P[pi].code === code) { p = P[pi]; break; } }
+        // Apply lead time shift
+        var psCfg = gPs(code);
+        var lt = psCfg.lt || 0;
+        var prodDayIdx = IP_DAGEN.indexOf(dag);
+        var inpakDayIdx = prodDayIdx + lt;
+        // If inpak falls beyond Friday, skip (next week's problem)
+        if (inpakDayIdx >= IP_DAGEN.length) continue;
+        var inpakDag = IP_DAGEN[inpakDayIdx];
+        if (!ipFlatPlan[inpakDag]) ipFlatPlan[inpakDag] = {};
+        ipFlatPlan[inpakDag][code] = {
+          inpakTijd: entry.inpakTijd || 0,
+          output: entry.output || 0,
+          batches: entry.batches || 0,
+          name: p ? p.name : code,
+          dept: dept,
+          category: dept,
+          productionDay: dag,
+          leadTime: lt
+        };
+      }
+    }
+  }
+}
+
+var _ipProdCallback = null;
+var _ipOverridesCallback = null;
+var _ipStaffingCallback = null;
+var _ipOverheadCallback = null;
+
+function ipListenWeek() {
+  if (!fbDb) return;
+  var path = 'productieplan/' + ipYear + '_' + ipWeek;
+  _ipProdCallback = function(snap) { ipProdPlan = snap.val() || {}; ipFlattenPlan(); ipRenderAll(); };
+  fbDb.ref(path).on('value', _ipProdCallback);
+  var k = ipYear + '_' + ipWeek;
+  _ipOverridesCallback = function(snap) { var v = snap.val(); if (v) { ipOverrides = v; ipRenderAll(); } };
+  fbDb.ref('inpak/overrides/' + k).on('value', _ipOverridesCallback);
+  _ipStaffingCallback = function(snap) { var v = snap.val(); if (v) { ipStaffing = v; ipInitDefaults(); ipRenderAll(); } };
+  fbDb.ref('inpak/staffing/' + k).on('value', _ipStaffingCallback);
+  _ipOverheadCallback = function(snap) { var v = snap.val(); if (v) { ipOverhead = v; ipInitDefaults(); ipRenderAll(); } };
+  fbDb.ref('inpak/overhead/' + k).on('value', _ipOverheadCallback);
+}
+
+function ipStopWeekListeners() {
+  if (!fbDb) return;
+  var path = 'productieplan/' + ipYear + '_' + ipWeek;
+  if (_ipProdCallback) { fbDb.ref(path).off('value', _ipProdCallback); _ipProdCallback = null; }
+  var k = ipYear + '_' + ipWeek;
+  if (_ipOverridesCallback) { fbDb.ref('inpak/overrides/' + k).off('value', _ipOverridesCallback); _ipOverridesCallback = null; }
+  if (_ipStaffingCallback) { fbDb.ref('inpak/staffing/' + k).off('value', _ipStaffingCallback); _ipStaffingCallback = null; }
+  if (_ipOverheadCallback) { fbDb.ref('inpak/overhead/' + k).off('value', _ipOverheadCallback); _ipOverheadCallback = null; }
+}
+
+/** Re-attach production plan listener if missing (e.g. after wp week navigation) */
+function ipEnsureProdListener() {
+  if (!fbDb || _ipProdCallback) return; // Already listening
+  var path = 'productieplan/' + ipYear + '_' + ipWeek;
+  _ipProdCallback = function(snap) { ipProdPlan = snap.val() || {}; ipFlattenPlan(); ipRenderAll(); };
+  fbDb.ref(path).on('value', _ipProdCallback);
+}
+
+// --- Inpak Capacity Calculation ---
+function ipRoundH(n) { return Math.round(n * 10) / 10; }
+function ipTotalOverhead(oh) { var t = 0; if (!oh) return t; for (var k in oh) t += (parseFloat(oh[k]) || 0); return t; }
+
+function ipGetInpakHours(dag, code) {
+  if (ipOverrides[dag] && ipOverrides[dag][code] !== undefined) return parseFloat(ipOverrides[dag][code]) || 0;
+  // v4: read directly from flattened plan (pre-calculated inpakTijd)
+  var fp = ipFlatPlan[dag] && ipFlatPlan[dag][code];
+  if (fp && fp.inpakTijd) return ipRoundH(fp.inpakTijd);
+  return 0;
+}
+function ipIsOrdering(code) { var pm = ipProductMap[code]; return pm && pm.isOrdering === true; }
+
+function ipCalcDay(dag) {
+  var dayProds = ipFlatPlan[dag] || {};
+  var oh = ipTotalOverhead(ipOverhead[dag] || {});
+  var prodH = 0;
+  for (var code in dayProds) { if (ipIsOrdering(code)) continue; prodH += ipGetInpakHours(dag, code); }
+  var ds = ipConfig.defaultStaffing || IP_DEF_STAFF;
+  var s = ipStaffing[dag] || {beschikbaar: ds[dag] || 16};
+  var bruto = s.beschikbaar || ds[dag] || 16;
+  var eff = ipConfig.efficiency || 0.85;
+  var effectief = ipRoundH(bruto * eff);
+  var planned = ipRoundH(prodH + oh);
+  var delta = ipRoundH(effectief - planned);
+  return {planned: planned, prodHours: ipRoundH(prodH), overhead: ipRoundH(oh), bruto: ipRoundH(bruto), effectief: effectief, delta: delta};
+}
+function ipCapStatus(delta) {
+  var th = ipConfig.thresholds || {green:-0.5, orange:-2.0};
+  if (delta >= (th.green !== undefined ? th.green : -0.5)) return 'green';
+  if (delta >= (th.orange !== undefined ? th.orange : -2.0)) return 'orange';
+  return 'red';
+}
+
+// --- Inpak Planner Actions ---
+function ipSetOverride(dag, code, uren) { var v = parseFloat(uren); if (isNaN(v) || v < 0) v = 0; if (!ipOverrides[dag]) ipOverrides[dag] = {}; ipOverrides[dag][code] = v; ipSaveOverrides(); ipUpdateDayCap(dag); }
+function ipClearOverride(dag, code) { if (ipOverrides[dag]) { delete ipOverrides[dag][code]; ipSaveOverrides(); } ipRenderAll(); }
+function ipSetStaffing(dag, val) { var v = parseFloat(val); if (isNaN(v) || v < 0) v = 0; if (!ipStaffing[dag]) ipStaffing[dag] = {}; ipStaffing[dag].beschikbaar = v; ipSaveStaffing(); ipUpdateDayCap(dag); }
+function ipSetOhItem(dag, item, val) { var v = parseFloat(val); if (isNaN(v) || v < 0) v = 0; if (!ipOverhead[dag]) ipOverhead[dag] = {}; ipOverhead[dag][item] = v; ipSaveOverhead(); ipUpdateDayCap(dag); }
+
+// --- Inpak Week Navigation ---
+function ipPrevWeek() { ipStopWeekListeners(); ipWeek--; if (ipWeek < 1) { ipWeek = 52; ipYear--; } ipLoadWeekLocal(); ipListenWeek(); ipRenderAll(); }
+function ipNextWeek() { ipStopWeekListeners(); ipWeek++; if (ipWeek > 52) { ipWeek = 1; ipYear++; } ipLoadWeekLocal(); ipListenWeek(); ipRenderAll(); }
+
+// --- Inpak Rendering ---
+function ipRenderAll() { if (typeof document === 'undefined' || cV !== 'i') return; if (ipTab === 'planning') ipRenderPlanning(); else ipRenderSettings(); }
+
+function ipUpdateDayCap(dag) {
+  if (typeof document === 'undefined') return;
+  var el = document.getElementById('ipcap-' + dag);
+  if (!el) return;
+  var c = ipCalcDay(dag);
+  var st = ipCapStatus(c.delta);
+  var pct = c.effectief > 0 ? Math.min(Math.round((c.planned / c.effectief) * 100), 150) : 0;
+  el.innerHTML = '<div class="dc-bar-fill dc-bar-' + st + '" style="width:' + Math.min(pct, 100) + '%"></div>' +
+    '<span class="dc-bar-text">' + c.planned + 'h / ' + c.effectief + 'h (' + (c.delta >= 0 ? '+' : '') + c.delta + 'h)</span>';
+  ipUpdateWeekSum();
+}
+function ipUpdateWeekSum() {
+  var el = document.getElementById('ipWeekSummary');
+  if (!el) return;
+  var tp = 0, te = 0;
+  IP_DAGEN.forEach(function(d) { var c = ipCalcDay(d); tp += c.planned; te += c.effectief; });
+  tp = ipRoundH(tp); te = ipRoundH(te);
+  var td = ipRoundH(te - tp);
+  var st = ipCapStatus(td);
+  el.innerHTML = 'Gepland ' + tp + 'h &middot; Beschikbaar ' + te + 'h &middot; <span class="dc-st-' + st + '">' + (td >= 0 ? '+' : '') + td + 'h</span>';
+}
+
+function ipGetWeekDates() {
+  var jan4 = new Date(ipYear, 0, 4);
+  var dow = jan4.getDay() || 7;
+  var mon = new Date(jan4);
+  mon.setDate(jan4.getDate() - dow + 1 + (ipWeek - 1) * 7);
+  var dates = {};
+  IP_DAGEN.forEach(function(d, i) { var dt = new Date(mon); dt.setDate(mon.getDate() + i); dates[d] = (dt.getDate() < 10 ? '0' : '') + dt.getDate() + '-' + (dt.getMonth() < 9 ? '0' : '') + (dt.getMonth() + 1); });
+  return dates;
+}
+
+function ipRenderPlanning() {
+  if (typeof document === 'undefined') return;
+  var container = document.getElementById('inpakView');
+  if (!container) return;
+  container.style.display = 'block';
+  var sv = document.getElementById('inpakSettingsView');
+  if (sv) sv.style.display = 'none';
+
+  var dates = ipGetWeekDates();
+
+  var html = '<div class="dc-header">';
+  html += '<button class="dc-nav-btn" onclick="ipPrevWeek()">&#9664;</button>';
+  html += '<span class="dc-title">Week ' + ipWeek + ' &mdash; ' + ipYear + '</span>';
+  html += '<button class="dc-nav-btn" onclick="ipNextWeek()">&#9654;</button>';
+  html += '</div>';
+
+  // Week summary
+  var tp = 0, te = 0;
+  IP_DAGEN.forEach(function(d) { var c = ipCalcDay(d); tp += c.planned; te += c.effectief; });
+  tp = ipRoundH(tp); te = ipRoundH(te);
+  var td = ipRoundH(te - tp);
+  var wst = ipCapStatus(td);
+  html += '<div class="dc-wsummary" id="ipWeekSummary">Gepland ' + tp + 'h &middot; Beschikbaar ' + te + 'h &middot; <span class="dc-st-' + wst + '">' + (td >= 0 ? '+' : '') + td + 'h</span></div>';
+
+  // No production plan notice
+  var hasPP = false;
+  IP_DAGEN.forEach(function(d) { if (ipFlatPlan[d] && Object.keys(ipFlatPlan[d]).length > 0) hasPP = true; });
+  if (!hasPP) {
+    html += '<div class="dc-notice">Geen productieplanning voor week ' + ipWeek + '. Vul eerst de productieplanning in.</div>';
+  }
+
+  // Today detection for inpak
+  var _ipToday = new Date();
+  var _ipTodayDow = (_ipToday.getDay() + 6) % 7;
+  var _ipTodayDag = _ipTodayDow < 5 ? IP_DAGEN[_ipTodayDow] : null;
+  var _ipIsCurrentWeek = (ipWeek === getISOWeek(_ipToday) && ipYear === _ipToday.getFullYear());
+
+  // Day cards in grid
+  html += '<div class="wp-grid">';
+  IP_DAGEN.forEach(function(dag) {
+    var expanded = ipExpanded[dag] !== false;
+    var dayProds = ipFlatPlan[dag] || {};
+    var prodCodes = Object.keys(dayProds);
+    var c = ipCalcDay(dag);
+    var st = ipCapStatus(c.delta);
+    var stIcon = st === 'green' ? '&#9989;' : st === 'orange' ? '&#128992;' : '&#128308;';
+    var pct = c.effectief > 0 ? Math.min(Math.round((c.planned / c.effectief) * 100), 150) : 0;
+
+    var _ipIsToday = (_ipIsCurrentWeek && dag === _ipTodayDag);
+    html += '<div class="dc-day' + (expanded ? ' dc-day-exp' : '') + (_ipIsToday ? ' dc-day-today' : '') + '">';
+    html += '<div class="dc-day-hdr" onclick="ipToggleDay(\'' + dag + '\')">';
+    html += '<span class="dc-day-name">' + IP_DAG_NAMEN[dag] + ' <span class="dc-day-date">' + dates[dag] + '</span></span>';
+    html += '<span class="dc-day-cap">' + stIcon + ' ' + (c.delta >= 0 ? '+' : '') + c.delta + 'h</span>';
+    html += '<span class="dc-arrow">' + (expanded ? '&#9650;' : '&#9660;') + '</span>';
+    html += '</div>';
+
+    if (expanded) {
+      html += '<div class="dc-day-body">';
+
+      var grouped = {};
+      prodCodes.forEach(function(code) {
+        var fp = ipFlatPlan[dag][code] || {};
+        var pm = ipProductMap[code] || {};
+        var cat = fp.dept || fp.category || pm.category || 'Overig';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push({code: code, name: fp.name || pm.name || code, hours: ipGetInpakHours(dag, code), stuks: fp.output || 0, isOrdering: pm.isOrdering, hasOverride: ipOverrides[dag] && ipOverrides[dag][code] !== undefined, productionDay: fp.productionDay || dag, leadTime: fp.leadTime || 0});
+      });
+
+      var catOrder = ['Nat gebak','Chocolade','Warm gebak','Brood','Banket Warm','Banket Koud','Chocolaterie','Overig'];
+      var catColors = {'Nat gebak':'#E85040','Chocolade':'#6B3A2A','Warm gebak':'#E8A840','Brood':'#c4a35a','Banket Warm':'#E85040','Banket Koud':'#4098E8','Chocolaterie':'#6B3A2A','Overig':'#999'};
+
+      catOrder.forEach(function(cat) {
+        if (!grouped[cat] || grouped[cat].length === 0) return;
+        html += '<div class="dc-cat" style="border-left:3px solid ' + (catColors[cat] || '#999') + '">' + cat + '</div>';
+        grouped[cat].forEach(function(item) {
+          if (item.isOrdering) {
+            html += '<div class="dc-prod dc-ord"><span class="dc-prod-name">' + item.name + '</span><span class="dc-ord-label">ordering</span></div>';
+          } else {
+            var _ltInfo = item.leadTime > 0 ? '<span class="dc-prod-src">prod: ' + IP_DAG_NAMEN[item.productionDay].substring(0,2) + ' +' + item.leadTime + 'd</span>' : '';
+            html += '<div class="dc-prod"><span class="dc-prod-name">' + item.name + '</span>' + _ltInfo;
+            html += '<span class="dc-prod-stuks">' + item.stuks + 'st</span>';
+            html += '<input type="number" class="dc-inp" value="' + item.hours + '" min="0" step="0.5" onchange="ipSetOverride(\'' + dag + '\',\'' + item.code + '\',this.value)" onfocus="this.select()"' + (item.hasOverride ? ' style="border-color:var(--brand)"' : '') + '>';
+            html += '<span class="dc-unit">h</span>';
+            if (item.hasOverride) html += '<button class="dc-reset" onclick="ipClearOverride(\'' + dag + '\',\'' + item.code + '\')" title="Reset">&#8634;</button>';
+            html += '</div>';
+          }
+        });
+      });
+
+      if (prodCodes.length === 0) html += '<div class="dc-empty">Geen productie gepland</div>';
+
+      // Overhead
+      var oh = ipOverhead[dag] || {};
+      html += '<div class="dc-oh-section"><div class="dc-oh-title">Overhead</div>';
+      for (var ohK in oh) {
+        html += '<div class="dc-oh-row"><span class="dc-oh-label">' + ohK + '</span>';
+        html += '<input type="number" class="dc-inp-sm" value="' + (oh[ohK] || 0) + '" min="0" step="0.5" onchange="ipSetOhItem(\'' + dag + '\',\'' + ohK + '\',this.value)"><span class="dc-unit">h</span></div>';
+      }
+      html += '</div>';
+
+      // Staffing
+      var s = ipStaffing[dag] || {};
+      html += '<div class="dc-staff-row"><span class="dc-staff-label">Bezetting</span>';
+      html += '<input type="number" class="dc-inp" value="' + (s.beschikbaar || 16) + '" min="0" step="1" onchange="ipSetStaffing(\'' + dag + '\',this.value)">';
+      html += '<span class="dc-unit">h (eff: ' + ipRoundH((s.beschikbaar || 16) * (ipConfig.efficiency || 0.85)) + ')</span></div>';
+
+      // Capacity bar
+      html += '<div class="dc-bar" id="ipcap-' + dag + '"><div class="dc-bar-fill dc-bar-' + st + '" style="width:' + Math.min(pct, 100) + '%"></div>';
+      html += '<span class="dc-bar-text">' + c.planned + 'h / ' + c.effectief + 'h (' + (c.delta >= 0 ? '+' : '') + c.delta + 'h)</span></div>';
+
+      html += '</div>'; // dc-day-body
+    }
+    html += '</div>'; // dc-day
+  });
+  html += '</div>'; // wp-grid
+
+  container.innerHTML = html;
+}
+
+function ipToggleDay(dag) { ipExpanded[dag] = ipExpanded[dag] === false ? true : !ipExpanded[dag]; ipRenderPlanning(); }
+
+// --- Inpak Settings View ---
+function ipRenderSettings() {
+  if (typeof document === 'undefined') return;
+  var container = document.getElementById('inpakSettingsView');
+  if (!container) return;
+  container.style.display = 'block';
+  var pv = document.getElementById('inpakView');
+  if (pv) pv.style.display = 'none';
+
+  var html = '';
+
+  // Overhead defaults
+  html += '<div class="set-section"><div class="set-title">Standaard Overhead</div>';
+  var oh = ipConfig.overhead || IP_DEF_OH;
+  for (var k in oh) { html += '<div class="set-row"><label class="set-label">' + k + '</label><input type="number" class="set-inp" value="' + oh[k] + '" min="0" step="0.5" onchange="ipUpdateCfgOh(\'' + k + '\',this.value)"> h</div>'; }
+  html += '</div>';
+
+  // Staffing defaults
+  html += '<div class="set-section"><div class="set-title">Standaard Uren per Dag</div>';
+  var ds = ipConfig.defaultStaffing || IP_DEF_STAFF;
+  IP_DAGEN.forEach(function(d) { html += '<div class="set-row"><label class="set-label">' + IP_DAG_NAMEN[d] + '</label><input type="number" class="set-inp" value="' + (ds[d] || 16) + '" min="0" step="1" onchange="ipUpdateCfgStaff(\'' + d + '\',this.value)"> h</div>'; });
+  html += '</div>';
+
+  // Efficiency
+  html += '<div class="set-section"><div class="set-title">Efficiencyfactor</div>';
+  html += '<div class="set-row"><label class="set-label">Factor</label><input type="number" class="set-inp" value="' + ((ipConfig.efficiency || 0.85) * 100) + '" min="50" max="100" step="5" onchange="ipUpdateCfgEff(this.value)"> %</div>';
+  html += '<div class="set-hint">85% = van elke 8 uur is 6.8 uur effectief</div></div>';
+
+  // Thresholds
+  html += '<div class="set-section"><div class="set-title">Drempelwaarden</div>';
+  var th = ipConfig.thresholds || {green:-0.5, orange:-2.0};
+  html += '<div class="set-row"><label class="set-label">Groen (&ge;)</label><input type="number" class="set-inp" value="' + th.green + '" step="0.5" onchange="ipUpdateCfgTh(\'green\',this.value)"> h</div>';
+  html += '<div class="set-row"><label class="set-label">Oranje (&ge;)</label><input type="number" class="set-inp" value="' + th.orange + '" step="0.5" onchange="ipUpdateCfgTh(\'orange\',this.value)"> h</div>';
+  html += '</div>';
+
+  // Product map
+  html += '<div class="set-section"><div class="set-title">Product Inpak-uren</div>';
+  html += '<div class="set-hint">Koppel producten aan inpak-uren.</div>';
+  html += '<input type="text" class="set-search" id="ipProdSearch" placeholder="Zoek product..." oninput="ipFilterProdMap(this.value)">';
+  html += '<div id="ipProdMapList">' + ipRenderProdMapList('') + '</div>';
+
+  // Add product
+  html += '<div class="set-add-section"><div class="set-subtitle">Product toevoegen</div>';
+  html += '<input type="text" class="set-inp-wide" id="ipNewCode" placeholder="Productcode">';
+  html += '<input type="text" class="set-inp-wide" id="ipNewName" placeholder="Naam">';
+  html += '<select class="set-inp-wide" id="ipNewCat"><option>Nat gebak</option><option>Chocolade</option><option>Warm gebak</option><option>Brood</option><option>Overig</option></select>';
+  html += '<input type="number" class="set-inp" id="ipNewHours" placeholder="Uren" min="0" step="0.5">';
+  html += '<label><input type="checkbox" id="ipNewOrd"> Ordering</label>';
+  html += '<button class="set-btn" onclick="ipAddProdMap()">Toevoegen</button></div></div>';
+
+  container.innerHTML = html;
+}
+
+function ipRenderProdMapList(filter) {
+  var html = '';
+  var codes = Object.keys(ipProductMap).sort(function(a, b) { return ((ipProductMap[a].name || a).localeCompare(ipProductMap[b].name || b)); });
+  var t = (filter || '').toLowerCase();
+  codes.forEach(function(code) {
+    var pm = ipProductMap[code];
+    if (t && (pm.name || '').toLowerCase().indexOf(t) === -1 && code.indexOf(t) === -1) return;
+    html += '<div class="set-prod-row"><span class="set-prod-info">' + (pm.name || code) + ' <span class="set-prod-code">' + code + '</span>';
+    if (pm.isOrdering) html += ' <span class="set-ord-badge">ordering</span>';
+    html += '</span>';
+    html += '<input type="number" class="dc-inp-sm" value="' + (pm.inpakUren || 0) + '" min="0" step="0.5" onchange="ipUpdateProdHours(\'' + code + '\',this.value)" title="Inpak-uren">';
+    html += '<span class="dc-unit">h</span>';
+    html += '<button class="dc-reset" onclick="ipRemoveProd(\'' + code + '\')" title="Verwijder">&times;</button></div>';
+  });
+  if (codes.length === 0) html += '<div class="dc-empty">Nog geen producten gekoppeld.</div>';
+  return html;
+}
+function ipFilterProdMap(term) { var el = document.getElementById('ipProdMapList'); if (el) el.innerHTML = ipRenderProdMapList(term); }
+
+// --- Inpak Settings Actions ---
+function ipUpdateCfgOh(key, val) { var v = parseFloat(val); if (isNaN(v) || v < 0) v = 0; ipConfig.overhead[key] = v; ipSaveConfig(); }
+function ipUpdateCfgStaff(dag, val) { var v = parseFloat(val); if (isNaN(v) || v < 0) v = 0; ipConfig.defaultStaffing[dag] = v; ipSaveConfig(); }
+function ipUpdateCfgEff(val) { var v = parseFloat(val); if (isNaN(v) || v < 50) v = 50; if (v > 100) v = 100; ipConfig.efficiency = v / 100; ipSaveConfig(); ipRenderAll(); }
+function ipUpdateCfgTh(key, val) { var v = parseFloat(val); if (isNaN(v)) v = 0; ipConfig.thresholds[key] = v; ipSaveConfig(); ipRenderAll(); }
+function ipUpdateProdHours(code, val) { var v = parseFloat(val); if (isNaN(v) || v < 0) v = 0; if (ipProductMap[code]) { ipProductMap[code].inpakUren = v; ipSaveProductMap(); ipRenderAll(); } }
+function ipAddProdMap() {
+  if (typeof document === 'undefined') return;
+  var code = document.getElementById('ipNewCode').value.trim();
+  var name = document.getElementById('ipNewName').value.trim();
+  var cat = document.getElementById('ipNewCat').value;
+  var hours = parseFloat(document.getElementById('ipNewHours').value) || 0;
+  var ord = document.getElementById('ipNewOrd').checked;
+  if (!code) { alert('Vul productcode in'); return; }
+  if (!name) { alert('Vul naam in'); return; }
+  ipProductMap[code] = {name: name, category: cat, inpakUren: hours, batchSize: 1, isOrdering: ord};
+  ipSaveProductMap();
+  document.getElementById('ipNewCode').value = '';
+  document.getElementById('ipNewName').value = '';
+  document.getElementById('ipNewHours').value = '';
+  document.getElementById('ipNewOrd').checked = false;
+  ipRenderSettings();
+}
+function ipRemoveProd(code) {
+  if (!confirm('Product "' + (ipProductMap[code] ? ipProductMap[code].name : code) + '" verwijderen?')) return;
+  delete ipProductMap[code];
+  ipSaveProductMap();
+  ipRenderSettings();
+}
+
+// --- Inpak Tab Switching ---
+function ipSwitchTab(tab) {
+  ipTab = tab;
+  if (typeof document === 'undefined') return;
+  var btns = document.querySelectorAll('.ip-tab');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('ip-tab-act', btns[i].getAttribute('data-tab') === tab);
+  ipRenderAll();
+}
+
+// --- Inpak Seed Data ---
+function ipSeedProductMap() {
+  if (Object.keys(ipProductMap).length > 0) return;
+  ipProductMap = {
+    "mokka16pl":{"name":"16 pl Mokka per 35","category":"Nat gebak","inpakUren":2.5,"batchSize":1,"isOrdering":false},
+    "hazelnoot8ds":{"name":"8 ds Hazelnoot per 16","category":"Nat gebak","inpakUren":1,"batchSize":1,"isOrdering":false},
+    "chipogebak16pl":{"name":"16 pl Chipogebak","category":"Nat gebak","inpakUren":4,"batchSize":1,"isOrdering":false},
+    "kardinaal6ds":{"name":"6 ds Kardinaal per 15","category":"Nat gebak","inpakUren":1,"batchSize":1,"isOrdering":false},
+    "mokka8ds":{"name":"8 ds Mokka per 24","category":"Nat gebak","inpakUren":1,"batchSize":1,"isOrdering":false},
+    "sloffen128":{"name":"Sloffen 128 stuks","category":"Nat gebak","inpakUren":1.5,"batchSize":1,"isOrdering":false},
+    "petitfours260":{"name":"260 ds Petit fours","category":"Nat gebak","inpakUren":6,"batchSize":1,"isOrdering":false},
+    "petitfours_vouwen":{"name":"Dozen vouwen Petit fours","category":"Nat gebak","inpakUren":1,"batchSize":1,"isOrdering":false},
+    "chocolade":{"name":"Chocolade","category":"Chocolade","inpakUren":4,"batchSize":1,"isOrdering":false},
+    "paas_chocolade":{"name":"Paas chocolade","category":"Chocolade","inpakUren":8,"batchSize":1,"isOrdering":false},
+    "wieringerkoek":{"name":"Wieringerkoek","category":"Warm gebak","inpakUren":2.5,"batchSize":1,"isOrdering":false},
+    "speculaas_geel":{"name":"Speculaas geel","category":"Warm gebak","inpakUren":5,"batchSize":1,"isOrdering":false},
+    "paaskoekje":{"name":"Paaskoekjes","category":"Warm gebak","inpakUren":3,"batchSize":1,"isOrdering":false},
+    "puurkoekjes":{"name":"Puurkoekjes","category":"Warm gebak","inpakUren":3,"batchSize":1,"isOrdering":false},
+    "room_croissants":{"name":"Room croissants","category":"Warm gebak","inpakUren":1,"batchSize":1,"isOrdering":false},
+    "sv_appelgebak":{"name":"SV appelgebak","category":"Warm gebak","inpakUren":1,"batchSize":1,"isOrdering":false},
+    "kwark_cake":{"name":"Kwark cake 25 tray","category":"Warm gebak","inpakUren":2,"batchSize":1,"isOrdering":false},
+    "soesjes":{"name":"Soesjes 10 kratten","category":"Warm gebak","inpakUren":2.5,"batchSize":1,"isOrdering":false},
+    "desem":{"name":"Desem","category":"Brood","inpakUren":1,"batchSize":1,"isOrdering":false},
+    "krentenbrood_kl_z":{"name":"Krentenbrood klein zonder","category":"Brood","inpakUren":0,"batchSize":1,"isOrdering":true},
+    "krentenbrood_kl_m":{"name":"Krentenbrood klein met","category":"Brood","inpakUren":0,"batchSize":1,"isOrdering":true},
+    "krentenbrood_heel":{"name":"Krentenbrood Heel","category":"Brood","inpakUren":0,"batchSize":1,"isOrdering":true},
+    "stolbol":{"name":"Stolbol","category":"Brood","inpakUren":0.5,"batchSize":1,"isOrdering":false},
+    "uienbrood":{"name":"Uienbrood","category":"Brood","inpakUren":0,"batchSize":1,"isOrdering":true},
+    "shape":{"name":"Shape","category":"Brood","inpakUren":0,"batchSize":1,"isOrdering":true},
+    "leuk":{"name":"Leuk","category":"Brood","inpakUren":0,"batchSize":1,"isOrdering":true}
+  };
+  ipSaveProductMap();
+}
+
+// --- Switch to Inpak View ---
+function swI() {
+  cV = 'i';
+  if (ipWeek === 0) {
+    var now = new Date();
+    ipWeek = getISOWeek(now);
+    var d = new Date(now); d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+    ipYear = d.getFullYear();
+    ipLoadLocal();
+    ipSeedProductMap();
+    ipStartListeners();
+    ipExpanded = {ma: true};
+  } else {
+    // Re-attach production plan listener in case it was detached by week navigation
+    ipEnsureProdListener();
+  }
+  _switchView('i', '.tab.t-ip', 'inpak', 'inpak');
+  ipRenderAll();
 }
 
 
@@ -2689,7 +4780,9 @@ function renderCards(products, nw, startDate, verkoop_map) {
       html += '</div></div>';
     }
     html += '</div>';
-    html += '<div class="pcard-actions"><button class="pcard-off-btn" onclick="tEn(false,\'' + p.code + '\');calc()">&#10005; Uitzetten</button></div>';
+    html += '<div class="pcard-actions">';
+    html += '<button class="pcard-plan-btn" onclick="openInplanPopup(\'' + p.code + '\')">&#128197; Inplannen</button>';
+    html += '<button class="pcard-off-btn" onclick="tEn(false,\'' + p.code + '\');calc()">&#10005; Uitzetten</button></div>';
     html += '</div></div>';
   });
 
@@ -2730,13 +4823,13 @@ function syncBottomTabs() {
   });
   // Update active state
   document.querySelectorAll('.btab').forEach(function(t) {
-    t.classList.toggle('act', t.getAttribute('data-cat') === cD && cV === 'p');
+    var dc = t.getAttribute('data-cat');
+    if (dc === 'voorraad') t.classList.toggle('act', cV === 'p');
+    else if (dc === 'weekplan') t.classList.toggle('act', cV === 'w');
+    else if (dc === 'inpak') t.classList.toggle('act', cV === 'i');
+    else if (dc === 'beheer') t.classList.toggle('act', cV === 'b');
+    else t.classList.remove('act');
   });
-  if (cV === 'b') {
-    document.querySelectorAll('.btab').forEach(function(t) {
-      t.classList.toggle('act', t.getAttribute('data-cat') === 'beheer');
-    });
-  }
 }
 
 // ============================================================
@@ -2806,6 +4899,8 @@ function closeSidebar() {
 }
 function sbNav(dept) {
   closeSidebar();
+  // Always go to voorraad when clicking sidebar dept items
+  cV = 'p';
   sw(dept);
 }
 function sbNavBeheer() {
@@ -2821,45 +4916,8 @@ function syncSidebarBadges() {
   });
 }
 
-// Override sw to update tabs + sidebar + bottom tabs + views
-var _origSw = sw;
-sw = function(d) {
-  _origSw(d);
-  // Update mobile tabs
-  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('act'); });
-  var tabIdx = DP.indexOf(d);
-  if (tabIdx >= 0) document.querySelectorAll('.tab')[tabIdx].classList.add('act');
-  // Update sidebar
-  document.querySelectorAll('.sb-item').forEach(function(s) {
-    s.classList.toggle('act', s.getAttribute('data-cat') === d);
-  });
-  // Update bottom tabs
-  syncBottomTabs();
-  document.getElementById('planView').classList.add('active');
-  document.getElementById('beheerView').classList.remove('active');
-  document.body.classList.remove('beheer-active');
-  if (document.getElementById('cDeptName')) document.getElementById('cDeptName').textContent = d;
-  calc();
-};
-
-var _origSwB = swB;
-swB = function() {
-  _origSwB();
-  // Update mobile tabs
-  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('act'); });
-  var tabs = document.querySelectorAll('.tab');
-  if (tabs[5]) tabs[5].classList.add('act');
-  // Update sidebar
-  document.querySelectorAll('.sb-item').forEach(function(s) {
-    s.classList.toggle('act', s.getAttribute('data-cat') === 'beheer');
-  });
-  // Update bottom tabs
-  syncBottomTabs();
-  document.getElementById('planView').classList.remove('active');
-  document.getElementById('beheerView').classList.add('active');
-  document.body.classList.add('beheer-active');
-  rB();
-};
+// View switching (sw/swB/swW/swI) is fully handled by _switchView() in dashboard_logic.js
+// No wrapper overrides needed — all tab/sidebar/bottom-tab logic lives in _switchView()
 
 // Hook into uC to sync sidebar badges + bottom tabs + topbar date
 var _origUC = typeof uC === 'function' ? uC : null;
