@@ -70,6 +70,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .sb-hamburger:hover{background:var(--surface-hover)}
 /* Search bar — sticky, always visible */
 .search-bar{display:flex;align-items:center;gap:6px;background:var(--surface);border-bottom:1px solid var(--border);padding:6px 10px;position:sticky;top:0;z-index:99}
+.sb-mob-hamburger{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:none;background:none;font-size:18px;color:var(--text-sub);cursor:pointer;flex-shrink:0;border-radius:var(--radius);-webkit-tap-highlight-color:transparent}
+.sb-mob-hamburger:active{background:var(--surface-hover)}
 .search-bar .sb-icon{color:var(--text-sub);font-size:14px;flex-shrink:0}
 .search-bar input{border:1px solid var(--border);background:var(--surface-sub);border-radius:var(--radius);padding:8px 10px;font-size:16px;font-family:var(--font);color:var(--text);outline:none;flex:1;min-height:40px}
 .search-bar input:focus{border-color:var(--brand);box-shadow:var(--shadow-focus);background:var(--surface)}
@@ -179,7 +181,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 /* ============================================================
    MOBILE ACTION BAR — Compact inline bar replacing toolbar+filter-bar
    ============================================================ */
-.mob-action-bar{display:flex;align-items:center;gap:4px;padding:4px}
+.mob-action-bar{display:flex;flex-direction:column;gap:2px;padding:4px}
+.mab-row2{display:flex;align-items:center;gap:4px;padding:0 2px}
+.mab-count{font-size:11px;color:var(--text-sub);font-weight:600;white-space:nowrap;padding:0 4px;flex-shrink:0}
+.mab-count .ss-val{color:var(--brand);font-weight:700}
 .mab-scroll{display:flex;align-items:center;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;min-width:0;scrollbar-width:none;-ms-overflow-style:none}
 .mab-scroll::-webkit-scrollbar{display:none}
 .mab-chip{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;background:var(--surface);color:var(--text-sub);white-space:nowrap;transition:all .12s;flex-shrink:0;min-height:36px;-webkit-tap-highlight-color:transparent}
@@ -746,6 +751,7 @@ td.vr{font-size:14px;font-weight:700}
   .card-list{display:none}
   .mob-action-bar{display:none}
   .bottom-tabs{display:none}
+  .sb-mob-hamburger{display:none}
   .bottom-sheet,.sheet-overlay{display:none !important}
   .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
   .topbar{display:flex}
@@ -1039,10 +1045,6 @@ td.vr{font-size:14px;font-weight:700}
           <span class="btab-icon">&#9881;</span>
           <span class="btab-label">Beheer</span>
         </div>
-        <div class="btab" onclick="openSidebar()">
-          <span class="btab-icon">&#9776;</span>
-          <span class="btab-label">Meer</span>
-        </div>
       </nav>
 
       <!-- Bottom sheet overlay -->
@@ -1097,6 +1099,7 @@ td.vr{font-size:14px;font-weight:700}
 
       <!-- Search bar — always visible, sticky -->
       <div class="search-bar" id="searchBar">
+        <button class="sb-mob-hamburger" onclick="openSidebar()" title="Menu">&#9776;</button>
         <span class="sb-icon">&#128269;</span>
         <input type="text" id="srch" placeholder="Zoek op naam of code..." oninput="if(cV==='b'){rB()}else{calc()}">
         <div class="topbar-sync" id="syncStatus2" onclick="fbSetup()" title="Klik om sync in te stellen">
@@ -1190,8 +1193,7 @@ td.vr{font-size:14px;font-weight:700}
         <div id="planView" class="active">
           <!-- Mobile action bar (replaces toolbar + filter bar) -->
           <div class="mob-action-bar" id="mobActionBar">
-            <div class="mab-summary"><span class="ss-val" id="mcDept">0</span> prod</div>
-            <!-- Department pills (mobile only) -->
+            <!-- Row 1: Department pills (main navigation) -->
             <div class="mab-dept-row" id="mabDeptRow">
               <div class="mab-dept-chip active" data-dept="Brood" onclick="sw('Brood')"><span class="mab-dept-dot" style="background:var(--brood)"></span>Brood</div>
               <div class="mab-dept-chip" data-dept="Banket Warm" onclick="sw('Banket Warm')"><span class="mab-dept-dot" style="background:var(--warm)"></span>B.Warm</div>
@@ -1199,14 +1201,17 @@ td.vr{font-size:14px;font-weight:700}
               <div class="mab-dept-chip" data-dept="Chocolaterie" onclick="sw('Chocolaterie')"><span class="mab-dept-dot" style="background:var(--choco)"></span>Choco</div>
               <div class="mab-dept-chip" data-dept="Overig" onclick="sw('Overig')"><span class="mab-dept-dot" style="background:var(--overig)"></span>Overig</div>
             </div>
-            <!-- Sort chips -->
-            <div class="mab-scroll">
-              <div class="mab-chip active" data-sort="urgency" onclick="setPlanSort('urgency')">Prioriteit</div>
-              <div class="mab-chip" data-sort="alpha" onclick="setPlanSort('alpha')">A-Z</div>
-              <div class="mab-chip" data-sort="demand" onclick="setPlanSort('demand')">Verkoop</div>
-              <div class="mab-chip" id="mabFocusChip" onclick="toggleMobFocus()">Tekorten</div>
+            <!-- Row 2: Count + Sort + Settings (compact) -->
+            <div class="mab-row2">
+              <span class="mab-count"><span class="ss-val" id="mcDept">0</span> prod</span>
+              <div class="mab-scroll">
+                <div class="mab-chip active" data-sort="urgency" onclick="setPlanSort('urgency')">Prioriteit</div>
+                <div class="mab-chip" data-sort="alpha" onclick="setPlanSort('alpha')">A-Z</div>
+                <div class="mab-chip" data-sort="demand" onclick="setPlanSort('demand')">Verkoop</div>
+                <div class="mab-chip" id="mabFocusChip" onclick="toggleMobFocus()">Tekorten</div>
+              </div>
+              <div class="mab-chip mab-settings" onclick="openSheet()"><span class="chip-icon">&#9881;</span></div>
             </div>
-            <div class="mab-chip mab-settings" onclick="openSheet()"><span class="chip-icon">&#9881;</span></div>
           </div>
 
           <div class="legend-bar">
