@@ -189,6 +189,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .mab-chip .chip-icon{font-size:14px}
 .mab-summary{font-size:12px;color:var(--text-sub);padding:0 4px;white-space:nowrap;flex-shrink:0}
 .mab-summary .ss-val{font-weight:700;color:var(--brand)}
+/* Department chips row */
+.mab-dept-row{display:flex;align-items:center;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 4px;flex:1;min-width:0;scrollbar-width:none;-ms-overflow-style:none}
+.mab-dept-row::-webkit-scrollbar{display:none}
+.mab-dept-chip{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border:1px solid var(--border);border-radius:16px;font-size:11px;font-weight:500;cursor:pointer;background:var(--surface);color:var(--text-sub);white-space:nowrap;transition:all .12s;flex-shrink:0;min-height:32px;-webkit-tap-highlight-color:transparent}
+.mab-dept-chip:active{background:var(--surface-hover)}
+.mab-dept-chip.active{background:var(--brand-surface);color:var(--brand);border-color:var(--brand);font-weight:600}
+.mab-dept-dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0}
 
 /* ============================================================
    FILTER BAR — Hidden on mobile (integrated into action bar)
@@ -834,6 +841,27 @@ td.vr{font-size:14px;font-weight:700}
 /* ============================================================
    SMALL PHONES (<400px)
    ============================================================ */
+@media(max-width:599px){
+  .wp-day{min-height:auto;margin-bottom:8px}
+  .wp-day-header{padding:8px 12px}
+  .wp-day-body{padding:0 10px 10px}
+  .wp-cap-bar{padding:4px 12px;font-size:10px}
+  .wp-dd{margin:0}
+  .wp-dd-header{padding:3px 0;font-size:10px}
+  .wp-dd-empty{padding:4px 0;font-size:10px;display:none}
+  .wp-dd.wp-dd-empty-section{display:none}
+  .wp-empty{padding:8px 0;font-size:12px}
+  .wp-add-btn{padding:8px;font-size:12px}
+  .wp-bezetting-bar{padding:6px 10px;gap:4px;font-size:11px}
+  .wp-bez-inp{width:40px;padding:4px;font-size:12px}
+  .wp-prod-main{padding:6px 4px;gap:4px;font-size:12px}
+  .wp-prod-name{font-size:12px}
+  .wp-prod-info{font-size:10px}
+  .wp-prod-batch{width:36px;padding:4px;font-size:12px}
+  .wp-header{padding:8px 0;font-size:12px}
+  .wp-wsummary{font-size:11px}
+  .wp-mode-bar{padding:6px 0;gap:6px}
+}
 @media(max-width:399px){
   .pcard-name{font-size:12px}
   .pcard-stock{width:38px}
@@ -865,10 +893,23 @@ td.vr{font-size:14px;font-weight:700}
 .sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);font-size:10px;color:rgba(255,255,255,.25)}
 
 /* Mobile sidebar overlay mode */
-.sidebar.sb-open{display:flex}
-.sb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199}
+.sidebar.sb-open{
+  display:flex;
+  flex-direction:column;
+  position:fixed;
+  top:0;
+  left:0;
+  bottom:0;
+  width:var(--sidebar-w);
+  background:var(--brand-dark);
+  z-index:200;
+  overflow-y:auto;
+  box-shadow:-2px 0 8px rgba(0,0,0,.15)
+}
+.sb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199;display:none}
 .sb-overlay.sb-open{display:block}
 @media(min-width:900px){
+  .sidebar.sb-open{position:relative;width:auto;box-shadow:none}
   .sb-overlay{display:none !important}
 }
 </style>
@@ -1150,6 +1191,15 @@ td.vr{font-size:14px;font-weight:700}
           <!-- Mobile action bar (replaces toolbar + filter bar) -->
           <div class="mob-action-bar" id="mobActionBar">
             <div class="mab-summary"><span class="ss-val" id="mcDept">0</span> prod</div>
+            <!-- Department pills (mobile only) -->
+            <div class="mab-dept-row" id="mabDeptRow">
+              <div class="mab-dept-chip active" data-dept="Brood" onclick="sw('Brood')"><span class="mab-dept-dot" style="background:var(--brood)"></span>Brood</div>
+              <div class="mab-dept-chip" data-dept="Banket Warm" onclick="sw('Banket Warm')"><span class="mab-dept-dot" style="background:var(--warm)"></span>B.Warm</div>
+              <div class="mab-dept-chip" data-dept="Banket Koud" onclick="sw('Banket Koud')"><span class="mab-dept-dot" style="background:var(--koud)"></span>B.Koud</div>
+              <div class="mab-dept-chip" data-dept="Chocolaterie" onclick="sw('Chocolaterie')"><span class="mab-dept-dot" style="background:var(--choco)"></span>Choco</div>
+              <div class="mab-dept-chip" data-dept="Overig" onclick="sw('Overig')"><span class="mab-dept-dot" style="background:var(--overig)"></span>Overig</div>
+            </div>
+            <!-- Sort chips -->
             <div class="mab-scroll">
               <div class="mab-chip active" data-sort="urgency" onclick="setPlanSort('urgency')">Prioriteit</div>
               <div class="mab-chip" data-sort="alpha" onclick="setPlanSort('alpha')">A-Z</div>
@@ -2303,11 +2353,15 @@ function sw(d) {
       if (sc === d) sbItems[k].classList.add('act');
       else if (DP.indexOf(sc) !== -1) sbItems[k].classList.remove('act');
     }
+    // Update mobile dept chips
+    syncDeptChips();
     return;
   }
   // If currently on inpak view, just update the dept
   if (cV === 'i') {
     if (typeof ipRenderAll === 'function') { try { ipRenderAll(); } catch(e) {} }
+    // Update mobile dept chips
+    syncDeptChips();
     return;
   }
   // Default: switch to voorraad view
@@ -2315,9 +2369,25 @@ function sw(d) {
   planSortFrozen = false;
   planOrderCache = null;
   _switchView('p', '.tab[onclick*="sw(\'' + d + '\')"]', 'voorraad', d);
+  // Update mobile dept chips
+  syncDeptChips();
   if (typeof calc === 'function' && typeof document !== 'undefined') {
     try { calc(); } catch(e) {}
   }
+}
+
+/** Sync mobile department chip active states */
+function syncDeptChips() {
+  if (typeof document === 'undefined') return;
+  var deptChips = document.querySelectorAll('.mab-dept-chip');
+  deptChips.forEach(function(chip) {
+    var dept = chip.getAttribute('data-dept');
+    if (dept === cD) {
+      chip.classList.add('active');
+    } else {
+      chip.classList.remove('active');
+    }
+  });
 }
 
 /** Switch to beheer view */
@@ -3752,27 +3822,30 @@ function renderWeekplanning() {
           });
         });
       } else {
-        // Single department view - group by dagdeel
-        var ochtendProducts = dayProducts.filter(function(x) { return (x.dagdeel || 'ochtend') === 'ochtend'; });
-        var middagProducts = dayProducts.filter(function(x) { return (x.dagdeel || 'ochtend') === 'middag'; });
+        // Single department view - group by dagdeel (only show when products exist)
+        if (prodCount > 0) {
+          var ochtendProducts = dayProducts.filter(function(x) { return (x.dagdeel || 'ochtend') === 'ochtend'; });
+          var middagProducts = dayProducts.filter(function(x) { return (x.dagdeel || 'ochtend') === 'middag'; });
 
-        // Get capacity info for single department
-        var singleDeptCap = wpCalcDeptDay(cD, dag);
-        var ddUren = getDagdeelUren(cD, dag);
+          // Get capacity info for single department
+          var singleDeptCap = wpCalcDeptDay(cD, dag);
 
-        // Ochtend section
-        html += '<div class="wp-dd wp-dd-ochtend">';
-        html += '<div class="wp-dd-header"><span class="wp-dd-icon">☀</span><span class="wp-dd-label">Ochtend</span><span class="wp-dd-cap">' + singleDeptCap.ochtend.prodH + 'h / ' + singleDeptCap.ochtend.effectief + 'h</span></div>';
-        ochtendProducts.forEach(function(item) { html += wpRenderProductRow(dag, item); });
-        if (ochtendProducts.length === 0) html += '<div class="wp-dd-empty">—</div>';
-        html += '</div>';
+          // Ochtend section
+          var ochtendEmpty = ochtendProducts.length === 0;
+          html += '<div class="wp-dd wp-dd-ochtend' + (ochtendEmpty ? ' wp-dd-empty-section' : '') + '">';
+          html += '<div class="wp-dd-header"><span class="wp-dd-icon">☀</span><span class="wp-dd-label">Ochtend</span><span class="wp-dd-cap">' + singleDeptCap.ochtend.prodH + 'h / ' + singleDeptCap.ochtend.effectief + 'h</span></div>';
+          ochtendProducts.forEach(function(item) { html += wpRenderProductRow(dag, item); });
+          if (ochtendEmpty) html += '<div class="wp-dd-empty">—</div>';
+          html += '</div>';
 
-        // Middag section
-        html += '<div class="wp-dd wp-dd-middag">';
-        html += '<div class="wp-dd-header"><span class="wp-dd-icon">☽</span><span class="wp-dd-label">Middag</span><span class="wp-dd-cap">' + singleDeptCap.middag.prodH + 'h / ' + singleDeptCap.middag.effectief + 'h</span></div>';
-        middagProducts.forEach(function(item) { html += wpRenderProductRow(dag, item); });
-        if (middagProducts.length === 0) html += '<div class="wp-dd-empty">—</div>';
-        html += '</div>';
+          // Middag section
+          var middagEmpty = middagProducts.length === 0;
+          html += '<div class="wp-dd wp-dd-middag' + (middagEmpty ? ' wp-dd-empty-section' : '') + '">';
+          html += '<div class="wp-dd-header"><span class="wp-dd-icon">☽</span><span class="wp-dd-label">Middag</span><span class="wp-dd-cap">' + singleDeptCap.middag.prodH + 'h / ' + singleDeptCap.middag.effectief + 'h</span></div>';
+          middagProducts.forEach(function(item) { html += wpRenderProductRow(dag, item); });
+          if (middagEmpty) html += '<div class="wp-dd-empty">—</div>';
+          html += '</div>';
+        }
       }
 
       if (prodCount === 0) {
