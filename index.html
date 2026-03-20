@@ -488,6 +488,20 @@ td.vr{font-size:14px;font-weight:700}
 .lm-batch-new:hover{background:var(--border)}
 .lm-batch-info{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;background:#f0ebf0;font-size:11px;font-weight:600;color:var(--brand);margin-bottom:10px}
 /* "Batch af?" confirmation step */
+.lm-goed-warn{font-size:11px;color:#8a6d2b;background:#fef9ee;border:1px solid #e8d5a3;border-radius:6px;padding:6px 10px;margin:-4px 0 8px;display:none;line-height:1.4}
+.lm-goed-warn.active{display:block}
+.lm-personen-row{padding:0 20px;margin:-4px 0 8px;animation:fadeIn .2s}
+.lm-personen-inner{background:var(--surface-sub);border:1px solid var(--border-sub);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lm-personen-inner label{font-size:12px;font-weight:600;color:var(--text-sub);white-space:nowrap}
+.lm-personen-ctrl{display:flex;align-items:center;gap:0}
+.lm-pers-btn{width:32px;height:32px;border:1px solid var(--border);background:var(--surface);font-size:16px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.lm-pers-btn:first-child{border-radius:6px 0 0 6px}
+.lm-pers-btn:last-child{border-radius:0 6px 6px 0}
+.lm-pers-btn:hover{background:var(--surface-hover)}
+#lmPersonen{width:44px;height:32px;border:1px solid var(--border);border-left:none;border-right:none;text-align:center;font-size:14px;font-weight:600;font-family:var(--font);-moz-appearance:textfield}
+#lmPersonen::-webkit-inner-spin-button{-webkit-appearance:none}
+.lm-personen-calc{font-size:11px;color:var(--text-dim);white-space:nowrap}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .lm-confirm{display:none;padding:16px 20px;text-align:center}
 .lm-confirm.active{display:block}
 .lm-confirm-q{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
@@ -1026,9 +1040,21 @@ tr:hover .plan-off{opacity:1;pointer-events:auto}
                 <button class="lm-proc-btn" id="lmProcInpak" onclick="setLogProcess('inpak')">Inpak</button>
               </div>
               <div class="log-modal-row">
-                <div class="lm-half"><label>Goed (stuks)</label><input type="number" id="lmGoed" min="0" placeholder="0"></div>
+                <div class="lm-half"><label>Goed (stuks)</label><input type="number" id="lmGoed" min="0" placeholder="0" oninput="lmCheckGoedWarn()"></div>
                 <div class="lm-half"><label>Afgekeurd</label><input type="number" id="lmAfg" min="0" placeholder="0"></div>
-                <div class="lm-half"><label>Tijd (min)</label><input type="number" id="lmTijd" min="0" placeholder="0"></div>
+                <div class="lm-half"><label>Tijd (min)</label><input type="number" id="lmTijd" min="0" placeholder="0" oninput="lmCheckTijdPersonen()"></div>
+              </div>
+              <div class="lm-goed-warn" id="lmGoedWarn"></div>
+              <div class="lm-personen-row" id="lmPersonenRow" style="display:none">
+                <div class="lm-personen-inner">
+                  <label>Aantal personen</label>
+                  <div class="lm-personen-ctrl">
+                    <button type="button" class="lm-pers-btn" onclick="lmAdjustPersonen(-1)">&minus;</button>
+                    <input type="number" id="lmPersonen" min="1" max="20" value="1">
+                    <button type="button" class="lm-pers-btn" onclick="lmAdjustPersonen(1)">+</button>
+                  </div>
+                  <div class="lm-personen-calc" id="lmPersonenCalc"></div>
+                </div>
               </div>
               <div class="log-modal-row">
                 <div class="lm-full"><label>Opmerking (optioneel)</label><input type="text" id="lmOpm" placeholder="Bijv. andere oven gebruikt"></div>
@@ -3156,7 +3182,8 @@ function plFbListen() {
   });
 }
 
-function plAddLog(code, goed, afgekeurd, opmerking, tijdMin, proces, batchId) {
+function plAddLog(code, goed, afgekeurd, opmerking, tijdMin, proces, batchId, personen) {
+  var pers = parseInt(personen) || 1;
   var p = P.find(function(x) { return x.code === code; });
   plLogs.unshift({
     id: Date.now().toString(),
@@ -3169,6 +3196,8 @@ function plAddLog(code, goed, afgekeurd, opmerking, tijdMin, proces, batchId) {
     totaal: (parseInt(goed) || 0) + (parseInt(afgekeurd) || 0),
     opmerking: opmerking || '',
     tijdMin: parseInt(tijdMin) || 0,
+    personen: pers,
+    manMin: (parseInt(tijdMin) || 0) * pers,
     proces: proces || 'productie',
     batchId: batchId || null
   });
@@ -3198,7 +3227,7 @@ function plFindOpenBatch(code) {
   var oldestLog = new Date(batchLogs[batchLogs.length-1].datum).getTime();
   if (oldestLog < threeDaysAgo) return null;
 
-  var totalGoed = batchLogs.reduce(function(s,l) { return s + l.goed; }, 0);
+  var totalGoed = batchLogs[0].goed; // latest session's goed (not sum)
   var totalTijd = batchLogs.reduce(function(s,l) { return s + (l.tijdMin||0); }, 0);
   var reason = status === 'needs_inpak' ? 'needs_inpak' : 'producing';
 
@@ -3224,6 +3253,7 @@ var _lmCode = null;
 var _lmProcess = 'productie'; // 'productie' or 'inpak'
 var _lmBatchId = null; // batch ID if continuing an open batch
 var _lmOpenBatch = null; // detected open batch info
+var _lmPrevGoed = null; // previous batch session goed count (for warning)
 
 function setLogProcess(proc) {
   _lmProcess = proc;
@@ -3237,11 +3267,59 @@ function lmAcceptBatch(cont) {
   banner.classList.remove('active');
   if (cont && _lmOpenBatch) {
     _lmBatchId = _lmOpenBatch.batchId;
+    // Store previous goed for warning (latest log of same process type)
+    var prevLogs = _lmOpenBatch.logs.filter(function(l) { return l.proces === _lmProcess; });
+    _lmPrevGoed = prevLogs.length > 0 ? prevLogs[0].goed : null;
     info.textContent = 'Batch doorgezet \u00b7 ' + _lmOpenBatch.sessies + ' eerdere sessie' + (_lmOpenBatch.sessies > 1 ? 's' : '') + ' \u00b7 ' + _lmOpenBatch.totalTijd + ' min';
     info.style.display = '';
   } else {
     _lmBatchId = null;
+    _lmPrevGoed = null;
     info.style.display = 'none';
+  }
+}
+
+function lmCheckTijdPersonen() {
+  var tijd = parseInt(document.getElementById('lmTijd').value) || 0;
+  var row = document.getElementById('lmPersonenRow');
+  if (tijd > 0) {
+    row.style.display = '';
+    lmUpdatePersonenCalc();
+  } else {
+    row.style.display = 'none';
+    document.getElementById('lmPersonen').value = 1;
+  }
+}
+
+function lmAdjustPersonen(delta) {
+  var inp = document.getElementById('lmPersonen');
+  var v = Math.max(1, Math.min(20, (parseInt(inp.value) || 1) + delta));
+  inp.value = v;
+  lmUpdatePersonenCalc();
+}
+
+function lmUpdatePersonenCalc() {
+  var tijd = parseInt(document.getElementById('lmTijd').value) || 0;
+  var pers = parseInt(document.getElementById('lmPersonen').value) || 1;
+  var calc = document.getElementById('lmPersonenCalc');
+  if (pers > 1 && tijd > 0) {
+    calc.textContent = '= ' + (tijd * pers) + ' manminuten';
+  } else {
+    calc.textContent = '';
+  }
+}
+
+function lmCheckGoedWarn() {
+  var warn = document.getElementById('lmGoedWarn');
+  if (!_lmBatchId || _lmPrevGoed === null) { warn.classList.remove('active'); return; }
+  var val = parseInt(document.getElementById('lmGoed').value) || 0;
+  if (val > 0 && val !== _lmPrevGoed) {
+    var diff = val - _lmPrevGoed;
+    var diffStr = diff > 0 ? '+' + diff : '' + diff;
+    warn.innerHTML = '\u26a0 Vorige sessie: <strong>' + _lmPrevGoed + ' stuks</strong>. Aantal wijkt af (' + diffStr + '). Klopt dit?';
+    warn.classList.add('active');
+  } else {
+    warn.classList.remove('active');
   }
 }
 
@@ -3258,6 +3336,9 @@ function openLogModal(code) {
   document.getElementById('lmAfg').value = '';
   document.getElementById('lmTijd').value = '';
   document.getElementById('lmOpm').value = '';
+  document.getElementById('lmPersonen').value = 1;
+  document.getElementById('lmPersonenRow').style.display = 'none';
+  document.getElementById('lmPersonenCalc').textContent = '';
   setLogProcess('productie');
 
   // Check for open batch
@@ -3306,7 +3387,8 @@ function openLogModal(code) {
       var isToday = l.datum.slice(0,10) === today;
       var dayPrefix = isToday ? '' : t.toLocaleDateString('nl-NL',{day:'numeric',month:'short'}) + ' ';
       var pLbl = l.proces === 'inpak' ? 'I' : 'P';
-      hh += '<div class="lm-hist-item"><span>' + dayPrefix + ts + ' ' + pLbl + (l.tijdMin ? ' \u00b7 ' + l.tijdMin + ' min' : '') + '</span>';
+      var histTijd = l.tijdMin ? ' \u00b7 ' + l.tijdMin + ' min' + ((l.personen||1) > 1 ? ' \u00d7 ' + l.personen + 'p' : '') : '';
+      hh += '<div class="lm-hist-item"><span>' + dayPrefix + ts + ' ' + pLbl + histTijd + '</span>';
       hh += '<span><span class="lm-hist-good">' + l.goed + '</span>';
       if (l.afgekeurd) hh += ' <span class="lm-hist-bad">-' + l.afgekeurd + '</span>';
       hh += '</span></div>';
@@ -3331,6 +3413,8 @@ function closeLogModal() {
   _lmBatchId = null;
   _lmOpenBatch = null;
   _lmPending = null;
+  _lmPrevGoed = null;
+  document.getElementById('lmGoedWarn').classList.remove('active');
 }
 
 // Pending submit data (held until batch choice is made)
@@ -3349,12 +3433,15 @@ function submitLogModal() {
     return;
   }
 
+  var personen = parseInt(document.getElementById('lmPersonen').value) || 1;
+
   // Store pending data
-  _lmPending = { code: _lmCode, goed: goed, afg: afg, opm: opm, tijd: tijd, proces: _lmProcess, batchId: _lmBatchId };
+  _lmPending = { code: _lmCode, goed: goed, afg: afg, opm: opm, tijd: tijd, personen: personen, proces: _lmProcess, batchId: _lmBatchId };
 
   // Show "Batch af?" confirmation step
   var sub = document.getElementById('lmConfirmSub');
-  sub.textContent = goed + ' stuks' + (afg > 0 ? ', ' + afg + ' afgekeurd' : '') + (tijd > 0 ? ', ' + tijd + ' min' : '') + ' \u00b7 ' + (_lmProcess === 'inpak' ? 'Inpak' : 'Productie');
+  var persLabel = personen > 1 ? ', ' + personen + ' pers (' + (tijd * personen) + ' manmin)' : '';
+  sub.textContent = goed + ' stuks' + (afg > 0 ? ', ' + afg + ' afgekeurd' : '') + (tijd > 0 ? ', ' + tijd + ' min' + persLabel : '') + ' \u00b7 ' + (_lmProcess === 'inpak' ? 'Inpak' : 'Productie');
   document.getElementById('lmFoot').style.display = 'none';
   document.querySelector('.log-modal-body').style.display = 'none';
   document.getElementById('lmHistory').style.display = 'none';
@@ -3369,7 +3456,7 @@ function finishBatch(choice) {
   if (choice === 'done') {
     // Batch is klaar — save log, no open batch marker
     // If was continuing a batch, mark it as closed by keeping batchId but batch is "done"
-    plAddLog(d.code, d.goed, d.afg, d.opm, d.tijd, d.proces, batchId);
+    plAddLog(d.code, d.goed, d.afg, d.opm, d.tijd, d.proces, batchId, d.personen);
     // Mark batch as closed
     if (batchId) plCloseBatch(batchId);
     closeLogModal();
@@ -3377,13 +3464,13 @@ function finishBatch(choice) {
   } else if (choice === 'continue') {
     // Later verder produceren — create/continue open batch
     if (!batchId) batchId = 'b-' + Date.now().toString();
-    plAddLog(d.code, d.goed, d.afg, d.opm, d.tijd, d.proces, batchId);
+    plAddLog(d.code, d.goed, d.afg, d.opm, d.tijd, d.proces, batchId, d.personen);
     closeLogModal();
     if (typeof showToast === 'function') showToast('Geregistreerd \u2014 batch loopt door');
   } else if (choice === 'inpak') {
     // Productie klaar, inpak volgt nog — create/continue open batch, mark as needs_inpak
     if (!batchId) batchId = 'b-' + Date.now().toString();
-    plAddLog(d.code, d.goed, d.afg, d.opm, d.tijd, d.proces, batchId);
+    plAddLog(d.code, d.goed, d.afg, d.opm, d.tijd, d.proces, batchId, d.personen);
     plMarkBatchNeedsInpak(batchId);
     closeLogModal();
     if (typeof showToast === 'function') showToast('Geregistreerd \u2014 inpak volgt nog');
@@ -3424,7 +3511,24 @@ function plRender() {
 
   var logs = plGetTodayLogs();
   var totalGoed = 0, totalAfg = 0, totalEntries = logs.length;
-  logs.forEach(function(l) { totalGoed += l.goed; totalAfg += l.afgekeurd; });
+  // For batch logs, use latest goed (not sum), for standalone logs use goed directly
+  var _batchGoedCounted = {};
+  logs.forEach(function(l) {
+    if (l.batchId) {
+      if (!_batchGoedCounted[l.batchId]) {
+        _batchGoedCounted[l.batchId] = true;
+        // Find latest log in this batch (logs are sorted newest first)
+        var latestInBatch = plLogs.filter(function(bl){return bl.batchId === l.batchId;})[0];
+        totalGoed += latestInBatch ? latestInBatch.goed : l.goed;
+        // Afgekeurd is cumulative across sessions
+        var batchAfg = plLogs.filter(function(bl){return bl.batchId === l.batchId;}).reduce(function(s,bl){return s+bl.afgekeurd;},0);
+        totalAfg += batchAfg;
+      }
+    } else {
+      totalGoed += l.goed;
+      totalAfg += l.afgekeurd;
+    }
+  });
 
   var today = new Date();
   var dateStr = today.toLocaleDateString('nl-NL', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
@@ -3489,7 +3593,8 @@ function plRender() {
         renderedBatches[l.batchId] = true;
         var batchLogs = plLogs.filter(function(bl) { return bl.batchId === l.batchId; });
         var bTijd = batchLogs.reduce(function(s,bl){return s+(bl.tijdMin||0);},0);
-        var bGoed = batchLogs.reduce(function(s,bl){return s+bl.goed;},0);
+        // Batch goed = latest session's goed (same items move through process, not additive)
+        var bGoed = batchLogs[0].goed;
         var bAfg = batchLogs.reduce(function(s,bl){return s+bl.afgekeurd;},0);
         var batchStatus = batchLogs[0].batchStatus || 'continue';
         var isOpen = batchStatus !== 'done';
@@ -3518,6 +3623,8 @@ function plRender() {
         var bInpakTijd = batchLogs.filter(function(bl){return bl.proces === 'inpak';}).reduce(function(s,bl){return s+(bl.tijdMin||0);},0);
         var tijdDetail = bTijd + ' min';
         if (bProdTijd > 0 && bInpakTijd > 0) tijdDetail = bProdTijd + 'm prod + ' + bInpakTijd + 'm inpak';
+        var bManMin = batchLogs.reduce(function(s,bl){return s+(bl.manMin||(bl.tijdMin||0)*(bl.personen||1));},0);
+        if (bManMin > bTijd) tijdDetail += ' (' + bManMin + ' manmin)';
         h += '<div class="pl-entry-meta">' + l.afdeling + ' &middot; ' + procLabel + ' &middot; ' + batchLogs.length + ' sessies &middot; ' + tijdDetail + ' &middot; ' + dateRange + '</div>';
         h += '</div>';
         h += '<div class="pl-entry-nums">';
@@ -3541,7 +3648,12 @@ function plRender() {
         h += '<div class="pl-entry-nums">';
         h += '<span class="pl-entry-good">' + l.goed + '</span>';
         if (l.afgekeurd > 0) h += '<span class="pl-entry-bad">-' + l.afgekeurd + '</span>';
-        h += '<span class="pl-entry-time">' + timeStr + (l.tijdMin ? ' \u00b7 ' + l.tijdMin + 'min' : '') + '</span>';
+        var tijdStr2 = '';
+        if (l.tijdMin) {
+          tijdStr2 = l.tijdMin + 'min';
+          if ((l.personen || 1) > 1) tijdStr2 += ' \u00d7 ' + l.personen + 'p (' + (l.manMin || l.tijdMin * l.personen) + ' manmin)';
+        }
+        h += '<span class="pl-entry-time">' + timeStr + (tijdStr2 ? ' \u00b7 ' + tijdStr2 : '') + '</span>';
         h += '</div>';
         h += '<button class="pl-entry-del" onclick="if(confirm(\'Verwijderen?\')){plDeleteLog(\'' + l.id + '\')}" title="Verwijderen">&times;</button>';
         h += '</div>';
