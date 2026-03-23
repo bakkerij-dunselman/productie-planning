@@ -414,9 +414,21 @@ td.vr{font-size:14px;font-weight:700}
    PRODUCTIELOG VIEW
    ============================================================ */
 #logView{padding:8px 12px 80px}
-.pl-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.pl-title{font-size:18px;font-weight:700;color:var(--text)}
-.pl-date{font-size:12px;color:var(--text-sub)}
+.pl-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.pl-title{font-size:18px;font-weight:700;color:var(--text);flex:1}
+.pl-export-btn{padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text-sub);transition:all .15s;white-space:nowrap}
+.pl-export-btn:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+.pl-period-bar{display:flex;gap:0;margin-bottom:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;width:fit-content}
+.pl-period-btn{padding:6px 16px;border:none;background:transparent;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text-sub);transition:all .15s}
+.pl-period-btn:hover{background:var(--surface-hover)}
+.pl-period-btn.active{background:var(--brand);color:#fff}
+.pl-date-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.pl-nav-btn{width:32px;height:32px;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:all .15s}
+.pl-nav-btn:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+.pl-date-label{font-size:14px;font-weight:600;color:var(--text);min-width:200px}
+.pl-today-btn{padding:4px 12px;border:1px solid var(--brand);background:transparent;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--brand);transition:all .15s}
+.pl-today-btn:hover{background:var(--brand);color:#fff}
+.pl-date-pick{padding:4px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-family:var(--font);color:var(--text-sub);cursor:pointer}
 .pl-dept-bar{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
 .pl-dept-btn{padding:6px 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);color:var(--text-sub);transition:all .15s}
 .pl-dept-btn:hover{background:var(--surface-hover)}
@@ -3154,6 +3166,8 @@ togAdvanced = function() {
 var plLogs = [];
 var plDept = null; // null = alle afdelingen
 var plListenersActive = false;
+var plDate = new Date(); // selected date for log view
+var plPeriod = 'dag'; // 'dag', 'week', 'maand'
 
 // HTML escape helper for productielog
 function esc(s) {
@@ -3498,18 +3512,109 @@ function plSetDept(dept) {
   plRender();
 }
 
-function plGetTodayLogs() {
-  var today = new Date().toISOString().substring(0, 10);
+function plGetFilteredLogs() {
+  var start, end;
+  if (plPeriod === 'dag') {
+    start = new Date(plDate); start.setHours(0,0,0,0);
+    end = new Date(start); end.setDate(end.getDate()+1);
+  } else if (plPeriod === 'week') {
+    start = new Date(plDate); start.setHours(0,0,0,0);
+    var dow = start.getDay() || 7; // Monday=1
+    start.setDate(start.getDate() - (dow - 1));
+    end = new Date(start); end.setDate(end.getDate()+7);
+  } else { // maand
+    start = new Date(plDate.getFullYear(), plDate.getMonth(), 1);
+    end = new Date(plDate.getFullYear(), plDate.getMonth()+1, 1);
+  }
+  var startISO = start.toISOString();
+  var endISO = end.toISOString();
   return plLogs.filter(function(l) {
-    return l.datum.substring(0, 10) === today && (!plDept || l.afdeling === plDept);
+    return l.datum >= startISO && l.datum < endISO && (!plDept || l.afdeling === plDept);
   });
+}
+
+function plNavDate(delta) {
+  if (plPeriod === 'dag') plDate.setDate(plDate.getDate() + delta);
+  else if (plPeriod === 'week') plDate.setDate(plDate.getDate() + (delta * 7));
+  else plDate.setMonth(plDate.getMonth() + delta);
+  plRender();
+}
+
+function plSetPeriod(p) {
+  plPeriod = p;
+  plRender();
+}
+
+function plGoToday() {
+  plDate = new Date();
+  plRender();
+}
+
+function plPickDate(val) {
+  if (!val) return;
+  var parts = val.split('-');
+  plDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  plRender();
+}
+
+function plGetDateLabel() {
+  if (plPeriod === 'dag') {
+    return plDate.toLocaleDateString('nl-NL', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  } else if (plPeriod === 'week') {
+    var start = new Date(plDate);
+    var dow = start.getDay() || 7;
+    start.setDate(start.getDate() - (dow - 1));
+    var end = new Date(start); end.setDate(end.getDate()+6);
+    var wk = getWeekNumber(start);
+    return 'Week ' + wk + ' · ' + start.toLocaleDateString('nl-NL',{day:'numeric',month:'short'}) + ' – ' + end.toLocaleDateString('nl-NL',{day:'numeric',month:'short',year:'numeric'});
+  } else {
+    return plDate.toLocaleDateString('nl-NL', {month:'long', year:'numeric'});
+  }
+}
+
+function getWeekNumber(d) {
+  var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay()||7));
+  var yearStart = new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return Math.ceil((((t - yearStart) / 86400000) + 1)/7);
+}
+
+function plExportCSV() {
+  var logs = plGetFilteredLogs();
+  if (logs.length === 0) { if(typeof showToast==='function') showToast('Geen data om te exporteren'); return; }
+  var header = 'Datum,Tijd,Product,Code,Afdeling,Proces,Goed,Afgekeurd,Totaal,Tijd (min),Personen,Manminuten,Batch ID,Batch Status,Opmerking';
+  var rows = [header];
+  logs.forEach(function(l) {
+    var d = new Date(l.datum);
+    var datum = d.toLocaleDateString('nl-NL');
+    var tijd = d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+    var pers = l.personen || 1;
+    var manMin = l.manMin || (l.tijdMin||0) * pers;
+    var row = [
+      datum, tijd, '"'+esc(l.naam||l.code).replace(/"/g,'""')+'"', l.code, l.afdeling,
+      l.proces||'productie', l.goed, l.afgekeurd, l.totaal,
+      l.tijdMin||0, pers, manMin,
+      l.batchId||'', l.batchStatus||'', '"'+(l.opmerking||'').replace(/"/g,'""')+'"'
+    ];
+    rows.push(row.join(','));
+  });
+  var csv = rows.join('\n');
+  var blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  var label = plPeriod === 'dag' ? plDate.toISOString().slice(0,10) : (plPeriod === 'week' ? 'week-'+getWeekNumber(plDate) : plDate.toLocaleDateString('nl-NL',{month:'short',year:'numeric'}));
+  a.download = 'productielog-' + label + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  if(typeof showToast==='function') showToast('CSV gedownload');
 }
 
 function plRender() {
   var el = document.getElementById('logView');
   if (!el) return;
 
-  var logs = plGetTodayLogs();
+  var logs = plGetFilteredLogs();
   var totalGoed = 0, totalAfg = 0, totalEntries = logs.length;
   // For batch logs, use latest goed (not sum), for standalone logs use goed directly
   var _batchGoedCounted = {};
@@ -3530,13 +3635,32 @@ function plRender() {
     }
   });
 
-  var today = new Date();
-  var dateStr = today.toLocaleDateString('nl-NL', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  var dateStr = plGetDateLabel();
+  var isToday = plDate.toISOString().slice(0,10) === new Date().toISOString().slice(0,10) && plPeriod === 'dag';
+  var dateInputVal = plDate.getFullYear() + '-' + ('0'+(plDate.getMonth()+1)).slice(-2) + '-' + ('0'+plDate.getDate()).slice(-2);
 
   var h = '';
 
-  // Header
-  h += '<div class="pl-header"><span class="pl-title">Productielog</span><span class="pl-date">' + dateStr + '</span></div>';
+  // Header with date navigation
+  h += '<div class="pl-header"><span class="pl-title">Productielog</span>';
+  h += '<button class="pl-export-btn" onclick="plExportCSV()" title="Exporteer als CSV">&#128190; CSV</button>';
+  h += '</div>';
+
+  // Period tabs
+  h += '<div class="pl-period-bar">';
+  ['dag','week','maand'].forEach(function(p) {
+    h += '<button class="pl-period-btn' + (plPeriod === p ? ' active' : '') + '" onclick="plSetPeriod(\'' + p + '\')">' + p.charAt(0).toUpperCase() + p.slice(1) + '</button>';
+  });
+  h += '</div>';
+
+  // Date navigation
+  h += '<div class="pl-date-nav">';
+  h += '<button class="pl-nav-btn" onclick="plNavDate(-1)" title="Vorige">&#9664;</button>';
+  h += '<span class="pl-date-label">' + dateStr + '</span>';
+  h += '<button class="pl-nav-btn" onclick="plNavDate(1)" title="Volgende">&#9654;</button>';
+  if (!isToday) h += '<button class="pl-today-btn" onclick="plGoToday()">Vandaag</button>';
+  h += '<input type="date" class="pl-date-pick" value="' + dateInputVal + '" onchange="plPickDate(this.value)">';
+  h += '</div>';
 
   // Department filter
   h += '<div class="pl-dept-bar">';
@@ -3584,7 +3708,8 @@ function plRender() {
   // Log entries — group by batchId where applicable
   h += '<div class="pl-entries">';
   if (logs.length === 0) {
-    h += '<div class="pl-empty">Nog geen productie geregistreerd vandaag' + (plDept ? ' voor ' + plDept : '') + '</div>';
+    var emptyLabel = plPeriod === 'dag' ? 'deze dag' : (plPeriod === 'week' ? 'deze week' : 'deze maand');
+    h += '<div class="pl-empty">Geen registraties ' + emptyLabel + (plDept ? ' voor ' + plDept : '') + '</div>';
   } else {
     var renderedBatches = {};
     logs.forEach(function(l) {
