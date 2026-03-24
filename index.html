@@ -3182,63 +3182,59 @@ function plLoadLocal() {
 function plSaveLocal() {
   try { localStorage.setItem('plLogs', JSON.stringify(plLogs)); } catch(e) {}
 }
-function plFbSave() {
-  if (!fbDb || !fbConnected) return;
-  try {
-    // Save logs as object keyed by ID for safe multi-user sync
-    var obj = {};
-    plLogs.forEach(function(l) { obj[l.id] = l; });
-    fbDb.ref('productielog2').set(obj);
-  } catch(e) {}
-}
 function plFbSaveOne(log) {
-  // Save single log entry (faster, no overwrite risk)
   if (!fbDb || !fbConnected) return;
-  try { fbDb.ref('productielog2/' + log.id).set(log); } catch(e) {}
+  try { fbDb.ref('productielog/' + log.id).set(log); } catch(e) { console.log('plFbSaveOne error', e); }
 }
 function plFbDeleteOne(id) {
   if (!fbDb || !fbConnected) return;
-  try { fbDb.ref('productielog2/' + id).remove(); } catch(e) {}
+  try { fbDb.ref('productielog/' + id).remove(); } catch(e) {}
 }
 function plFbListen() {
   if (!fbDb || plListenersActive) return;
   plListenersActive = true;
   var firstLoad = true;
-  fbDb.ref('productielog2').on('value', function(snap) {
-    var d = snap.val();
-    var fbLogs = (d && typeof d === 'object') ? Object.values(d) : [];
 
-    if (firstLoad) {
-      firstLoad = false;
-      // On first load: merge local logs that aren't in Firebase yet
-      var fbIds = {};
-      fbLogs.forEach(function(l) { if (l && l.id) fbIds[l.id] = true; });
-      var localOnly = plLogs.filter(function(l) { return l.id && !fbIds[l.id]; });
-      if (localOnly.length > 0) {
-        // Push local-only logs to Firebase
-        localOnly.forEach(function(l) { plFbSaveOne(l); });
+  fbDb.ref('productielog').on('value', function(snap) {
+    var d = snap.val();
+    var fbLogs = [];
+    if (d && typeof d === 'object') {
+      if (Array.isArray(d)) {
+        // Old array format — migrate to object format
+        var updates = {};
+        d.forEach(function(l) { if (l && l.id) { updates[l.id] = l; fbLogs.push(l); } });
+        if (Object.keys(updates).length > 0) {
+          fbDb.ref('productielog').set(updates);
+          return; // triggers another on('value') with migrated data
+        }
+      } else {
+        fbLogs = Object.values(d).filter(function(l) { return l && l.id; });
       }
     }
 
-    // Merge: take all Firebase logs + any local logs not yet in Firebase
+    if (firstLoad) {
+      firstLoad = false;
+      // Push any local-only logs to Firebase
+      var fbIds = {};
+      fbLogs.forEach(function(l) { fbIds[l.id] = true; });
+      var localOnly = plLogs.filter(function(l) { return l.id && !fbIds[l.id]; });
+      if (localOnly.length > 0) {
+        var updates = {};
+        localOnly.forEach(function(l) { updates[l.id] = l; });
+        fbDb.ref('productielog').update(updates);
+        return; // Will trigger another on('value') with merged data
+      }
+    }
+
+    // Merge Firebase + local
     var allIds = {};
     var merged = [];
-    fbLogs.forEach(function(l) { if (l && l.id) { allIds[l.id] = true; merged.push(l); } });
-    plLogs.forEach(function(l) { if (l.id && !allIds[l.id]) { merged.push(l); } });
+    fbLogs.forEach(function(l) { allIds[l.id] = true; merged.push(l); });
+    plLogs.forEach(function(l) { if (l.id && !allIds[l.id]) merged.push(l); });
     merged.sort(function(a,b) { return b.datum.localeCompare(a.datum); });
     plLogs = merged;
     plSaveLocal();
     if (cV === 'l') plRender();
-  });
-  // Migrate from old 'productielog' array format if exists
-  fbDb.ref('productielog').once('value', function(snap) {
-    var old = snap.val();
-    if (old && Array.isArray(old) && old.length > 0) {
-      var obj = {};
-      old.forEach(function(l) { if (l && l.id) obj[l.id] = l; });
-      fbDb.ref('productielog2').update(obj);
-      fbDb.ref('productielog').remove();
-    }
   });
 }
 
