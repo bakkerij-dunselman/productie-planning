@@ -3183,23 +3183,57 @@ function plSaveLocal() {
   try { localStorage.setItem('plLogs', JSON.stringify(plLogs)); } catch(e) {}
 }
 function plFbSave() {
-  if (fbDb && fbConnected) {
-    try { fbDb.ref('productielog').set(plLogs); } catch(e) {}
-  }
+  if (!fbDb || !fbConnected) return;
+  try {
+    // Save logs as object keyed by ID for safe multi-user sync
+    var obj = {};
+    plLogs.forEach(function(l) { obj[l.id] = l; });
+    fbDb.ref('productielog2').set(obj);
+  } catch(e) {}
+}
+function plFbSaveOne(log) {
+  // Save single log entry (faster, no overwrite risk)
+  if (!fbDb || !fbConnected) return;
+  try { fbDb.ref('productielog2/' + log.id).set(log); } catch(e) {}
+}
+function plFbDeleteOne(id) {
+  if (!fbDb || !fbConnected) return;
+  try { fbDb.ref('productielog2/' + id).remove(); } catch(e) {}
 }
 function plFbListen() {
   if (!fbDb || plListenersActive) return;
   plListenersActive = true;
-  fbDb.ref('productielog').on('value', function(snap) {
+  fbDb.ref('productielog2').on('value', function(snap) {
     var d = snap.val();
-    if (d && Array.isArray(d)) { plLogs = d; plSaveLocal(); if (cV === 'l') plRender(); }
+    if (d && typeof d === 'object') {
+      // Convert object to sorted array (newest first)
+      plLogs = Object.values(d).sort(function(a,b) {
+        return b.datum.localeCompare(a.datum);
+      });
+      plSaveLocal();
+      if (cV === 'l') plRender();
+    } else if (d === null) {
+      // No data in Firebase yet — push local data if we have any
+      if (plLogs.length > 0) plFbSave();
+    }
+  });
+  // Migrate from old 'productielog' array format if exists
+  fbDb.ref('productielog').once('value', function(snap) {
+    var old = snap.val();
+    if (old && Array.isArray(old) && old.length > 0) {
+      // Merge old data into new format
+      var obj = {};
+      old.forEach(function(l) { if (l && l.id) obj[l.id] = l; });
+      fbDb.ref('productielog2').update(obj);
+      fbDb.ref('productielog').remove(); // Clean up old format
+    }
   });
 }
 
 function plAddLog(code, goed, afgekeurd, opmerking, tijdMin, proces, batchId, personen) {
   var pers = parseInt(personen) || 1;
   var p = P.find(function(x) { return x.code === code; });
-  plLogs.unshift({
+  var log = {
     id: Date.now().toString(),
     datum: new Date().toISOString(),
     code: code,
@@ -3214,9 +3248,10 @@ function plAddLog(code, goed, afgekeurd, opmerking, tijdMin, proces, batchId, pe
     manMin: (parseInt(tijdMin) || 0) * pers,
     proces: proces || 'productie',
     batchId: batchId || null
-  });
+  };
+  plLogs.unshift(log);
   plSaveLocal();
-  plFbSave();
+  plFbSaveOne(log);
   plRender();
 }
 
@@ -3251,14 +3286,15 @@ function plFindOpenBatch(code) {
 function plDeleteLog(id) {
   plLogs = plLogs.filter(function(l) { return l.id !== id; });
   plSaveLocal();
-  plFbSave();
+  plFbDeleteOne(id);
   plRender();
 }
 
 function plDeleteBatch(batchId) {
+  var toDelete = plLogs.filter(function(l) { return l.batchId === batchId; });
   plLogs = plLogs.filter(function(l) { return l.batchId !== batchId; });
   plSaveLocal();
-  plFbSave();
+  toDelete.forEach(function(l) { plFbDeleteOne(l.id); });
   plRender();
 }
 
@@ -3493,18 +3529,17 @@ function finishBatch(choice) {
 }
 
 function plCloseBatch(batchId) {
-  // Mark all logs in this batch as closed
   plLogs.forEach(function(l) {
-    if (l.batchId === batchId) l.batchStatus = 'done';
+    if (l.batchId === batchId) { l.batchStatus = 'done'; plFbSaveOne(l); }
   });
-  plSaveLocal(); plFbSave();
+  plSaveLocal();
 }
 
 function plMarkBatchNeedsInpak(batchId) {
   plLogs.forEach(function(l) {
-    if (l.batchId === batchId) l.batchStatus = 'needs_inpak';
+    if (l.batchId === batchId) { l.batchStatus = 'needs_inpak'; plFbSaveOne(l); }
   });
-  plSaveLocal(); plFbSave();
+  plSaveLocal();
 }
 
 function plSetDept(dept) {
