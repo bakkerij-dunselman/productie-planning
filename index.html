@@ -3203,29 +3203,41 @@ function plFbDeleteOne(id) {
 function plFbListen() {
   if (!fbDb || plListenersActive) return;
   plListenersActive = true;
+  var firstLoad = true;
   fbDb.ref('productielog2').on('value', function(snap) {
     var d = snap.val();
-    if (d && typeof d === 'object') {
-      // Convert object to sorted array (newest first)
-      plLogs = Object.values(d).sort(function(a,b) {
-        return b.datum.localeCompare(a.datum);
-      });
-      plSaveLocal();
-      if (cV === 'l') plRender();
-    } else if (d === null) {
-      // No data in Firebase yet — push local data if we have any
-      if (plLogs.length > 0) plFbSave();
+    var fbLogs = (d && typeof d === 'object') ? Object.values(d) : [];
+
+    if (firstLoad) {
+      firstLoad = false;
+      // On first load: merge local logs that aren't in Firebase yet
+      var fbIds = {};
+      fbLogs.forEach(function(l) { if (l && l.id) fbIds[l.id] = true; });
+      var localOnly = plLogs.filter(function(l) { return l.id && !fbIds[l.id]; });
+      if (localOnly.length > 0) {
+        // Push local-only logs to Firebase
+        localOnly.forEach(function(l) { plFbSaveOne(l); });
+      }
     }
+
+    // Merge: take all Firebase logs + any local logs not yet in Firebase
+    var allIds = {};
+    var merged = [];
+    fbLogs.forEach(function(l) { if (l && l.id) { allIds[l.id] = true; merged.push(l); } });
+    plLogs.forEach(function(l) { if (l.id && !allIds[l.id]) { merged.push(l); } });
+    merged.sort(function(a,b) { return b.datum.localeCompare(a.datum); });
+    plLogs = merged;
+    plSaveLocal();
+    if (cV === 'l') plRender();
   });
   // Migrate from old 'productielog' array format if exists
   fbDb.ref('productielog').once('value', function(snap) {
     var old = snap.val();
     if (old && Array.isArray(old) && old.length > 0) {
-      // Merge old data into new format
       var obj = {};
       old.forEach(function(l) { if (l && l.id) obj[l.id] = l; });
       fbDb.ref('productielog2').update(obj);
-      fbDb.ref('productielog').remove(); // Clean up old format
+      fbDb.ref('productielog').remove();
     }
   });
 }
