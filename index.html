@@ -1415,6 +1415,7 @@ function sProd(code, weekIdx, val) {
   if (!prod[code]) prod[code] = {};
   prod[code][weekIdx] = (typeof val === 'number' && val >= 0) ? val : 0;
   _ls('prod', prod);
+  fbWrite('prod', prod);
 }
 
 // ============================================================
